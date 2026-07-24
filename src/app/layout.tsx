@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "Connectez votre marque aux créateurs les plus performants. Gérez vos contrats, sécurisez vos paiements et analysez votre ROI en un seul endroit.",
 };
 
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,6 +23,8 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-foreground antialiased min-h-screen`}>
         {children}
         <ToasterProvider />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
