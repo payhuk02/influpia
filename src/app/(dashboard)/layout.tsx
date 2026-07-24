@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
+import { RealtimeProvider } from "@/components/realtime-provider";
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +89,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
           
           <div className="relative z-10 max-w-6xl mx-auto">
+            <RealtimeProvider />
             {children}
           </div>
         </div>
