@@ -1,11 +1,17 @@
 "use client";
 
 import { createCampaign } from "@/app/(dashboard)/actions/campaigns";
+import { generateCampaignBrief } from "@/app/(dashboard)/actions/ai";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function NewCampaignPage() {
   const router = useRouter();
+  const [description, setDescription] = useState("");
+  const [keywords, setKeywords] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     const promise = createCampaign(formData).then((res) => {
@@ -21,6 +27,19 @@ export default function NewCampaignPage() {
       },
       error: (err) => err.message
     });
+  }
+
+  async function handleAIGenerate() {
+    setGenerating(true);
+    try {
+      const brief = await generateCampaignBrief(keywords);
+      setDescription(brief);
+      toast.success("Brief généré par l'IA !");
+    } catch (err) {
+      toast.error("Erreur de génération IA");
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -47,11 +66,29 @@ export default function NewCampaignPage() {
               />
             </div>
 
+            <div className="space-y-4 p-4 border border-primary/20 bg-primary/5 rounded-xl">
+              <h3 className="text-sm font-bold text-primary flex items-center gap-2">✨ Assistant IA</h3>
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  placeholder="Mots clés (ex: Tech, App, Baskets...)"
+                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                  value={keywords}
+                  onChange={(e) => setKeywords(e.target.value)}
+                />
+                <Button type="button" onClick={handleAIGenerate} disabled={generating || !keywords}>
+                  {generating ? "Génération..." : "Rédiger le brief"}
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-white/80">Description et Objectifs</label>
               <textarea 
                 name="description"
-                rows={4}
+                rows={6}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Décrivez ce que vous attendez des influenceurs..."
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary text-white resize-none"
                 required

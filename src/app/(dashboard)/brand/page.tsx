@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { AcceptApplicationButton, ApproveDeliverableButton } from "./payment-buttons";
+import { BoostCampaignButton } from "@/components/boost-campaign-button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,6 +83,29 @@ export default async function BrandDashboardPage() {
             </Button>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Mes Campagnes & Boost */}
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Vos Récentes Campagnes</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {campaigns?.map((campaign) => (
+            <div key={campaign.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-lg mb-1">{campaign.title}</h3>
+                <p className="text-sm text-white/50">{campaign.budget} €</p>
+              </div>
+              <div className="flex justify-end border-t border-white/5 pt-4">
+                <BoostCampaignButton campaignId={campaign.id} isBoosted={campaign.is_boosted} />
+              </div>
+            </div>
+          ))}
+          {!campaigns?.length && (
+            <div className="col-span-3 p-10 text-center text-white/40 border border-white/5 rounded-2xl border-dashed">
+              Vous n'avez pas encore créé de campagne.
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">

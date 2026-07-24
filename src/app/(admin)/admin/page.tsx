@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
+import { DownloadContractButton } from "@/components/download-contract-button";
 
 export default async function AdminDashboard() {
   const supabase = await createClient(); // Because of RLS policies for admins, we can use the regular client if is_admin is true
@@ -52,6 +53,15 @@ export default async function AdminDashboard() {
               <div>
                 <CardTitle className="text-xl mb-1">{collab.campaign?.title}</CardTitle>
                 <p className="text-sm text-white/50">{collab.brand?.company_name} 🤝 {collab.influencer?.display_name}</p>
+                <div className="mt-2">
+                  <DownloadContractButton collab={{
+                    collaborationId: collab.id,
+                    brandName: collab.brand?.company_name || 'Marque',
+                    influencerName: collab.influencer?.display_name || 'Créateur',
+                    campaignTitle: collab.campaign?.title || 'Campagne',
+                    amount: collab.amount_cents / 100
+                  }} />
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-emerald-400">{(collab.amount_cents / 100).toFixed(2)} €</p>
