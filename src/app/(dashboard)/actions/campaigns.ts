@@ -22,7 +22,7 @@ export async function createCampaign(formData: FormData) {
   const validation = campaignSchema.safeParse(rawData);
 
   if (!validation.success) {
-    return { error: validation.error.errors[0].message };
+    return { error: validation.error.issues[0].message };
   }
 
   const { error } = await supabase.from("campaigns").insert({
