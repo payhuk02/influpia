@@ -46,6 +46,12 @@ export async function applyToCampaign(campaignId: string) {
 
   if (!user) throw new Error("Unauthorized");
 
+  const { data: profile } = await supabase.from('profiles').select('kyc_status').eq('id', user.id).single();
+  
+  if (profile?.kyc_status !== 'verified') {
+    redirect("/onboarding");
+  }
+
   const { error } = await supabase.from("campaign_applications").insert({
     campaign_id: campaignId,
     influencer_id: user.id,
