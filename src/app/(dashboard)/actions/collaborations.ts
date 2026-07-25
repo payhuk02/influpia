@@ -19,7 +19,7 @@ export async function acceptApplicationAndPay(applicationId: string, amount: num
   if (appError || !application) return { error: "Candidature introuvable." };
   
   // Security check: Only the brand owning the campaign can accept it
-  if (application.campaigns?.brand_id !== user.id) return { error: "Non autorisé" };
+  if ((application.campaigns as any)?.brand_id !== user.id) return { error: "Non autorisé" };
 
   // 2. Update Application Status
   await supabase.from("campaign_applications").update({ status: "accepted" }).eq("id", applicationId);

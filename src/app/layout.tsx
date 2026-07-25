@@ -6,8 +6,17 @@ import { ToasterProvider } from "@/components/toaster-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Influpia - La plateforme d'influence nouvelle génération",
-  description: "Connectez votre marque aux créateurs les plus performants. Gérez vos contrats, sécurisez vos paiements et analysez votre ROI en un seul endroit.",
+  title: "Influpia - La Marketplace des Influenceurs et Marques",
+  description: "Connectez-vous avec les meilleurs créateurs de contenu grâce à notre IA de matching. Sécurisez vos partenariats avec notre Escrow FedaPay.",
+  openGraph: {
+    title: "Influpia - Plateforme d'Influence B2B2C",
+    description: "Connectez-vous avec les meilleurs créateurs de contenu.",
+    url: "https://influpia.com",
+    siteName: "Influpia",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 import { Analytics } from "@vercel/analytics/react";

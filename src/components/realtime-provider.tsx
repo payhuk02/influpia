@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export function RealtimeProvider() {
   const supabase = createClient();
