@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     // 2. Create the collaboration in 'in_progress' state (Funds are locked)
     const { error: collabError } = await supabaseAdmin.from("collaborations").insert({
       application_id,
-      brand_id: app.campaigns.brand_id,
+      brand_id: (app.campaigns as any).brand_id,
       influencer_id: app.influencer_id,
       status: "in_progress",
       agreed_amount: amount,
