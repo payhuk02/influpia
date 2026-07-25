@@ -20,7 +20,7 @@ export async function updateProfile(formData: FormData) {
   const validation = profileSchema.safeParse(rawData);
 
   if (!validation.success) {
-    return { error: validation.error.errors[0].message };
+    return { error: validation.error.issues[0].message };
   }
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
