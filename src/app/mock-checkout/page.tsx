@@ -1,10 +1,10 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 
-export default function MockCheckoutPage() {
+function MockCheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -55,5 +55,13 @@ export default function MockCheckoutPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function MockCheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Chargement...</div>}>
+      <MockCheckoutContent />
+    </Suspense>
   );
 }
