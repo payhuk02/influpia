@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToasterProvider } from "@/components/toaster-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+// Remove Google Fonts for local testing to avoid network issues
+const interClassName = "font-sans";
 
 export const metadata: Metadata = {
   title: "Influpia - La Marketplace des Influenceurs et Marques",
@@ -19,9 +19,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,11 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="dark">
-      <body className={`${inter.className} bg-background text-foreground antialiased min-h-screen`}>
+      <body className={`${interClassName} bg-background text-foreground antialiased min-h-screen`}>
         {children}
         <ToasterProvider />
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
