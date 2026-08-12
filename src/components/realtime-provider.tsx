@@ -9,8 +9,9 @@ export function RealtimeProvider() {
 
   useEffect(() => {
     // Écouter les nouveaux messages
+    const channelId = `realtime_messages-${Date.now()}`;
     const channel = supabase
-      .channel('realtime_messages')
+      .channel(channelId)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
