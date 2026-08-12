@@ -52,7 +52,7 @@ export async function signup(formData: FormData) {
     const role = formData.get("role") as string;
     const name = formData.get("name") as string;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -65,6 +65,9 @@ export async function signup(formData: FormData) {
 
     if (error) {
       errorMsg = error.message;
+    } else if (data?.user && data.user.identities && data.user.identities.length === 0) {
+      // Supabase returns the user but with empty identities if the email is already taken
+      errorMsg = "Un compte existe déjà avec cette adresse email. Veuillez vous connecter ou utiliser une autre adresse.";
     }
   } catch (e: any) {
     errorMsg = e.message || "Erreur d'initialisation de Supabase (Vérifiez les variables d'environnement Vercel)";

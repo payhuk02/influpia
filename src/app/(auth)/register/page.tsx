@@ -40,29 +40,35 @@ export default function RegisterPage() {
         <ErrorMessage />
       </Suspense>
 
-      <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl">
-        <button
-          type="button"
-          onClick={() => setRole("brand")}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-            role === "brand" ? "bg-white text-black shadow-sm" : "text-white/60 hover:text-white"
-          }`}
-        >
-          Marque
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole("influencer")}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-            role === "influencer" ? "bg-white text-black shadow-sm" : "text-white/60 hover:text-white"
-          }`}
-        >
-          Influenceur
-        </button>
-      </div>
-
       <form action={signup} className="space-y-4 mt-4">
+        
         <input type="hidden" name="role" value={role} />
+        <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl mb-6">
+          <label className={`flex-1 py-2 text-center text-sm font-medium rounded-lg transition-all cursor-pointer ${
+            role === "brand" ? "bg-white text-black shadow-sm" : "text-white/60 hover:text-white"
+          }`}>
+            <input 
+              type="radio" 
+              value="brand" 
+              checked={role === "brand"} 
+              onChange={() => setRole("brand")} 
+              className="hidden" 
+            />
+            Marque
+          </label>
+          <label className={`flex-1 py-2 text-center text-sm font-medium rounded-lg transition-all cursor-pointer ${
+            role === "influencer" ? "bg-white text-black shadow-sm" : "text-white/60 hover:text-white"
+          }`}>
+            <input 
+              type="radio" 
+              value="influencer" 
+              checked={role === "influencer"} 
+              onChange={() => setRole("influencer")} 
+              className="hidden" 
+            />
+            Influenceur
+          </label>
+        </div>
         
         {role === "brand" ? (
           <div className="space-y-2">

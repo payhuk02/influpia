@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { LayoutDashboard, Users, Megaphone, Scale, LogOut, Settings } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -22,16 +23,49 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  const navItems = [
+    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Utilisateurs (KYC)", href: "/admin/users", icon: Users },
+    { label: "Campagnes", href: "/admin/campaigns", icon: Megaphone },
+    { label: "Litiges & Paiements", href: "/admin/disputes", icon: Scale },
+    { label: "Paramètres Plateforme", href: "/admin/settings", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      <header className="border-b border-white/10 bg-white/5 p-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row">
+      {/* Sidebar */}
+      <aside className="w-full md:w-64 bg-white/5 border-b md:border-r md:border-b-0 border-white/10 flex flex-col">
+        <div className="p-6 border-b border-white/10 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-destructive flex items-center justify-center font-bold">A</div>
-          <span className="font-bold tracking-tight">Admin Portal (Influpia)</span>
+          <span className="font-bold tracking-tight">Admin Portal</span>
         </div>
-        <Link href="/" className="text-sm text-white/50 hover:text-white">Quitter l'Admin</Link>
-      </header>
-      <main className="flex-1 p-8">
+        
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => (
+            <Link 
+              key={item.href} 
+              href={item.href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-sm font-medium">{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/10">
+          <Link 
+            href="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-sm font-medium">Quitter l'Admin</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto bg-black p-8">
         {children}
       </main>
     </div>

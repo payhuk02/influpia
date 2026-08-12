@@ -1,94 +1,186 @@
 "use client";
 
-import { updateProfile } from "../actions/profile";
-import { toast } from "sonner";
+import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { updateBrandProfile, updateInfluencerProfile } from "./actions";
+import { Loader2, ShieldCheck, Building2, UserCircle, CreditCard } from "lucide-react";
 
-export function SettingsForm({ 
-  initialData 
-}: { 
-  initialData: { email: string; displayName: string; bio: string; } 
-}) {
-  
-  async function handleSubmit(formData: FormData) {
-    const promise = updateProfile(formData).then((res) => {
-      if (res.error) throw new Error(res.error);
-      return res;
-    });
+export function SettingsForm({ user, profile, data }: { user: any, profile: any, data: any }) {
+  const [activeTab, setActiveTab] = useState("public");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-    toast.promise(promise, {
-      loading: 'Sauvegarde en cours...',
-      success: 'Votre profil a été mis à jour.',
-      error: (err) => err.message
-    });
-  }
+  const isBrand = profile.role === "brand";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    
+    try {
+      const formData = new FormData(e.currentTarget);
+      if (isBrand) {
+        await updateBrandProfile(formData);
+      } else {
+        await updateInfluencerProfile(formData);
+      }
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form action={handleSubmit} className="space-y-8">
-      {/* Avatar Section */}
-      <div className="flex items-center gap-6">
-        <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" alt="Avatar" className="w-full h-full object-cover" />
-        </div>
-        <div>
-          <button type="button" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors mb-2 block">
-            Changer la photo
-          </button>
-          <p className="text-xs text-white/40">JPG, GIF ou PNG. Max 2MB.</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/80">Nom d'affichage / Entreprise</label>
-          <input
-            name="displayName"
-            type="text"
-            defaultValue={initialData.displayName}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary text-white"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-white/80">Adresse Email</label>
-          <input
-            type="email"
-            defaultValue={initialData.email}
-            disabled
-            className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white/50 cursor-not-allowed"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-white/80">Biographie / Description</label>
-        <textarea
-          name="bio"
-          rows={4}
-          defaultValue={initialData.bio}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary text-white resize-none"
-        />
-      </div>
-
-      {/* Social Links */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold border-b border-white/5 pb-2">Réseaux Sociaux</h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div className="flex items-center gap-3">
-            <span className="w-10 text-center text-xl">📸</span>
-            <input name="instagram" type="text" placeholder="URL Instagram" className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary text-sm text-white" />
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-10 text-center text-xl">🎵</span>
-            <input name="tiktok" type="text" placeholder="URL TikTok" className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary text-sm text-white" />
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-6 border-t border-white/5 flex justify-end">
-        <button type="submit" className="px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors shadow-[0_0_15px_rgba(124,58,237,0.3)]">
-          Sauvegarder les modifications
+    <div className="flex flex-col md:flex-row gap-8">
+      {/* Sidebar Tabs */}
+      <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
+        <button 
+          type="button"
+          onClick={() => setActiveTab("public")}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${activeTab === 'public' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-white/60 hover:bg-white/5 hover:text-white border border-transparent'}`}
+        >
+          <UserCircle className="w-5 h-5" /> Profil Public
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveTab("billing")}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${activeTab === 'billing' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-white/60 hover:bg-white/5 hover:text-white border border-transparent'}`}
+        >
+          {isBrand ? <Building2 className="w-5 h-5" /> : <CreditCard className="w-5 h-5" />} 
+          {isBrand ? "Facturation & B2B" : "Paiements & Portfolio"}
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveTab("security")}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${activeTab === 'security' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-white/60 hover:bg-white/5 hover:text-white border border-transparent'}`}
+        >
+          <ShieldCheck className="w-5 h-5" /> Sécurité du Compte
         </button>
       </div>
-    </form>
+
+      {/* Main Content */}
+      <div className="flex-1">
+        <form onSubmit={handleSubmit}>
+          {activeTab === "public" && (
+            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <Card className="bg-white/[0.02] border-white/10">
+                <CardHeader>
+                  <CardTitle>Informations Publiques</CardTitle>
+                  <CardDescription>Ces informations seront visibles par les autres utilisateurs.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Nom d'affichage / Entreprise</label>
+                    <Input name={isBrand ? "company_name" : "display_name"} defaultValue={data?.company_name || data?.display_name || ''} className="bg-white/5 border-white/10" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Biographie / Description</label>
+                    <textarea 
+                      name={isBrand ? "description" : "bio"} 
+                      defaultValue={data?.description || data?.bio || ''} 
+                      className="w-full min-h-[100px] p-3 rounded-md bg-white/5 border border-white/10 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "billing" && (
+            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <Card className="bg-white/[0.02] border-white/10">
+                <CardHeader>
+                  <CardTitle>{isBrand ? "Détails B2B & Facturation" : "Finances & Portfolio"}</CardTitle>
+                  <CardDescription>
+                    {isBrand ? "Informations nécessaires à la génération automatique des factures." : "Renseignez vos identifiants pour recevoir vos paiements directement."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isBrand ? (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Numéro de TVA Intracommunautaire</label>
+                        <Input name="vat_number" defaultValue={data?.vat_number || ''} placeholder="FRXX00000000" className="bg-white/5 border-white/10" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Adresse de Facturation complète</label>
+                        <textarea 
+                          name="address" 
+                          defaultValue={data?.billing_address?.full_address || ''} 
+                          placeholder="123 Rue de la Marque, 75001 Paris, France"
+                          className="w-full min-h-[80px] p-3 rounded-md bg-white/5 border border-white/10 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">URL de votre Charte Graphique (Brand Guidelines)</label>
+                        <Input name="brand_guidelines_url" defaultValue={data?.brand_guidelines_url || ''} type="url" placeholder="https://..." className="bg-white/5 border-white/10" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-emerald-400">Identifiant Compte FedaPay</label>
+                        <Input name="fedapay_account_id" defaultValue={data?.fedapay_account_id || ''} placeholder="cus_xxx..." className="bg-white/5 border-white/10" />
+                        <p className="text-xs text-white/40">Nécessaire pour recevoir vos paiements Mobile Money/Cartes via FedaPay.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-blue-400">Identifiant Compte Moneyfusion</label>
+                        <Input name="moneyfusion_account_id" defaultValue={data?.moneyfusion_account_id || ''} placeholder="mf_acc_xxx..." className="bg-white/5 border-white/10" />
+                        <p className="text-xs text-white/40">Alternative pour réception de paiements sécurisés via Moneyfusion.</p>
+                      </div>
+                      <div className="space-y-2 mt-6 pt-6 border-t border-white/10">
+                        <label className="text-sm font-medium">Lien vers votre Media Kit / Portfolio</label>
+                        <Input name="portfolio_url" defaultValue={data?.portfolio_url || ''} type="url" placeholder="https://..." className="bg-white/5 border-white/10" />
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "security" && (
+            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <Card className="bg-white/[0.02] border-white/10">
+                <CardHeader>
+                  <CardTitle>Sécurité & Authentification</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Adresse Email</label>
+                    <Input type="email" defaultValue={user?.email} disabled className="bg-white/5 border-white/10 text-white/50" />
+                    <p className="text-xs text-white/40">Pour modifier votre email, veuillez contacter le support.</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-destructive/20 bg-destructive/5">
+                <CardHeader>
+                  <CardTitle className="text-destructive">Zone Dangereuse</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-white/60 mb-4">La suppression de votre compte est définitive. Toutes vos données seront effacées.</p>
+                  <Button type="button" variant="destructive">Supprimer le compte</Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {(activeTab === "public" || activeTab === "billing") && (
+            <div className="mt-6 flex items-center justify-end gap-4">
+              {success && <span className="text-emerald-400 text-sm font-medium animate-in fade-in">Profil mis à jour !</span>}
+              <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 text-white min-w-[150px]">
+                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Sauvegarder"}
+              </Button>
+            </div>
+          )}
+        </form>
+      </div>
+    </div>
   );
 }

@@ -6,13 +6,28 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/brand') || 
+                           request.nextUrl.pathname.startsWith('/influencer') || 
+                           request.nextUrl.pathname.startsWith('/dashboard') || 
+                           request.nextUrl.pathname.startsWith('/messages') || 
+                           request.nextUrl.pathname.startsWith('/analytics')
+
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
+                      request.nextUrl.pathname.startsWith('/register')
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // Si les variables d'environnement manquent (ex: non configurées sur Vercel), on ne fait pas planter le middleware
+    // Faille corrigée : On ne laisse plus passer (fail-open) vers les routes protégées si les clés manquent
     if (!supabaseUrl || !supabaseKey) {
       console.error("SUPABASE ENV VARIABLES ARE MISSING IN VERCEL.");
+      if (isProtectedRoute) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        url.searchParams.set('error', 'configuration_error')
+        return NextResponse.redirect(url)
+      }
       return supabaseResponse;
     }
 
@@ -40,16 +55,15 @@ export async function middleware(request: NextRequest) {
     // Refresh session if expired - required for Server Components
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser()
 
-    const isProtectedRoute = request.nextUrl.pathname.startsWith('/brand') || 
-                             request.nextUrl.pathname.startsWith('/influencer') || 
-                             request.nextUrl.pathname.startsWith('/dashboard') || 
-                             request.nextUrl.pathname.startsWith('/messages') || 
-                             request.nextUrl.pathname.startsWith('/analytics')
-
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
-                        request.nextUrl.pathname.startsWith('/register')
+    if (error && isProtectedRoute) {
+       console.error("Auth error in middleware:", error.message);
+       const url = request.nextUrl.clone()
+       url.pathname = '/login'
+       return NextResponse.redirect(url)
+    }
 
     if (isProtectedRoute && !user) {
       const url = request.nextUrl.clone()
@@ -60,14 +74,20 @@ export async function middleware(request: NextRequest) {
     // Redirect logged-in users away from auth pages
     if (isAuthRoute && user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/brand' // Simplified to avoid DB call in Edge middleware which can crash
+      url.pathname = '/dashboard'; // Send to the secure router which queries the DB
       return NextResponse.redirect(url)
     }
 
     return supabaseResponse
   } catch (error) {
     console.error("Middleware Error:", error);
-    // En cas d'erreur inattendue, on laisse passer la requête plutôt que d'afficher une erreur 500
+    // Faille corrigée : On bloque les accès protégés en cas d'erreur inattendue (fail-closed)
+    if (isProtectedRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'server_error')
+      return NextResponse.redirect(url)
+    }
     return supabaseResponse;
   }
 }

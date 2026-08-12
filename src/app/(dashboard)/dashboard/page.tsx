@@ -10,11 +10,32 @@ export default async function DashboardRouterPage() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
+
+  if (!profile) {
+    // 🛠️ Self-healing: If the database trigger failed, create the profile manually
+    const role = user.user_metadata?.role === "influencer" ? "influencer" : "brand";
+    const name = user.user_metadata?.name || "Utilisateur";
+
+    await supabase.from("profiles").insert({
+      id: user.id,
+      email: user.email!,
+      role: role,
+      is_admin: false
+    });
+
+    if (role === "brand") {
+      await supabase.from("brands").insert({ id: user.id, company_name: name });
+    } else {
+      await supabase.from("influencers").insert({ id: user.id, display_name: name });
+    }
+    
+    profile = { role };
+  }
 
   if (profile?.role === "brand") {
     redirect("/brand");
