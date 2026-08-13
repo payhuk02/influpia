@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, MessageSquare, Clock, CheckCircle, Scale, FileText, Plus } from "lucide-react";
+import { AlertTriangle, MessageSquare, Clock, CheckCircle, Scale, FileText } from "lucide-react";
 import { getUserDisputes } from "../actions/disputes";
+import { getCollaborationOptions } from "../actions/form-actions";
+import { CreateDisputeButton } from "@/components/dashboard/feature-forms";
 
 export default async function DisputesPage() {
   const supabase = await createClient();
@@ -13,6 +15,7 @@ export default async function DisputesPage() {
   if (!user) return null;
 
   const disputes = await getUserDisputes(user.id);
+  const collaborations = await getCollaborationOptions(user.id);
 
   const statusConfig = {
     open: { label: 'Ouvert', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: AlertTriangle },
@@ -34,10 +37,7 @@ export default async function DisputesPage() {
             Gérez les litiges et demandes de remboursement.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouveau Litige
-        </Button>
+        <CreateDisputeButton collaborations={collaborations} />
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
@@ -57,10 +57,7 @@ export default async function DisputesPage() {
                 <p className="text-white/60 text-center max-w-md mb-6">
                   Vous n'avez aucun litige en cours. Si vous rencontrez un problème avec une collaboration, vous pouvez ouvrir un litige ici.
                 </p>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Ouvrir un Litige
-                </Button>
+                <CreateDisputeButton collaborations={collaborations} label="Ouvrir un Litige" />
               </CardContent>
             </Card>
           ) : (

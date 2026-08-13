@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, Share2, TrendingUp, DollarSign, Users, Calendar, Award, Link } from "lucide-react";
 import { getAffiliateInfo, getCommissions, getAffiliatePayouts, getAffiliateMetrics, getTierRules } from "../actions/affiliate";
+import { JoinAffiliateButton } from "@/components/dashboard/feature-forms";
 
 export default async function AffiliatePage() {
   const supabase = await createClient();
@@ -68,10 +69,7 @@ export default async function AffiliatePage() {
                   </div>
                 </div>
               </div>
-              <Button className="w-full bg-primary hover:bg-primary/90">
-                <Share2 className="w-4 h-4 mr-2" />
-                Rejoindre le programme
-              </Button>
+              <JoinAffiliateButton />
             </div>
           </CardContent>
         </Card>

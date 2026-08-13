@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Key, Plus, Copy, Eye, EyeOff, BarChart3, Webhook, Book, Trash2 } from "lucide-react";
+import { Key, Copy, Eye, EyeOff, BarChart3, Webhook, Book, Trash2 } from "lucide-react";
 import { getAPIKeys, getAPIUsageLogs, getWebhooks, getAPIEndpoints } from "../actions/api";
+import { CreateApiKeyButton, CreateWebhookButton } from "@/components/dashboard/feature-forms";
 
 export default async function APIPage() {
   const supabase = await createClient();
@@ -26,10 +27,7 @@ export default async function APIPage() {
             Gérez vos clés API, webhooks et consultez l'utilisation.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle Clé API
-        </Button>
+        <CreateApiKeyButton />
       </div>
 
       {/* Stats Overview */}
@@ -100,10 +98,7 @@ export default async function APIPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <Key className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune clé API créée</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Créer une clé
-                  </Button>
+                  <CreateApiKeyButton label="Créer une clé" className="mt-4" />
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -208,10 +203,7 @@ export default async function APIPage() {
                   <CardTitle>Webhooks</CardTitle>
                   <CardDescription>Configurez les webhooks pour les notifications d'événements</CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nouveau Webhook
-                </Button>
+                <CreateWebhookButton />
               </div>
             </CardHeader>
             <CardContent>
@@ -219,10 +211,7 @@ export default async function APIPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <Webhook className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucun webhook configuré</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Créer un webhook
-                  </Button>
+                  <CreateWebhookButton label="Créer un webhook" className="mt-4" />
                 </div>
               ) : (
                 <div className="space-y-3">

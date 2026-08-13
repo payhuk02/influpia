@@ -1,7 +1,11 @@
-INSERT INTO public.affiliate_programs (name, description, commission_type, commission_rate, cookie_duration_days, payout_threshold_cents) VALUES
-  ('Standard Referral Program', 'Programme de parrainage standard pour Influpia', 'percentage', 0.1000, 30, 5000);
-INSERT INTO public.contract_templates (name, description, template_type, content, variables) VALUES
-  ('Standard Campaign Contract', 'Contrat standard pour campagnes d''influence', 'standard', 
+INSERT INTO public.affiliate_programs (name, description, commission_type, commission_rate, cookie_duration_days, payout_threshold_cents)
+SELECT 'Standard Referral Program', 'Programme de parrainage standard pour Influpia', 'percentage', 0.1000, 30, 5000
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.affiliate_programs WHERE name = 'Standard Referral Program'
+);
+
+INSERT INTO public.contract_templates (name, description, template_type, content, variables)
+SELECT 'Standard Campaign Contract', 'Contrat standard pour campagnes d''influence', 'standard', 
 '# CONTRAT DE COLLABORATION INFLUENCER
 
 ## Entre les parties :
@@ -21,8 +25,10 @@ Paiement sécurisé via escrow Influpia
 ---
 Fait le {{contract_date}}',
 '{"brand_name": {"type": "text"}, "influencer_name": {"type": "text"}, "campaign_title": {"type": "text"}, "deliverables_list": {"type": "text"}, "total_amount": {"type": "number"}, "currency": {"type": "text"}, "contract_date": {"type": "date"}}'::jsonb
-  )
-;
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.contract_templates WHERE name = 'Standard Campaign Contract'
+);
+
 INSERT INTO public.search_facets (facet_name, facet_type, display_name, options, sort_order) VALUES
   ('niches', 'checkbox', 'Niches', '[
     {"value": "fashion", "label": "Mode", "count": 0},
@@ -51,7 +57,8 @@ INSERT INTO public.search_facets (facet_name, facet_type, display_name, options,
     {"value": "es", "label": "Espagnol", "count": 0},
     {"value": "pt", "label": "Portugais", "count": 0}
   ]'::jsonb, 7)
-;
+ON CONFLICT (facet_name) DO NOTHING;
+
 INSERT INTO public.subscription_plans (name, display_name, tier, price_monthly_cents, price_yearly_cents, features, limits, sort_order) VALUES 
   ('free', 'Starter', 'free', 0, 0, 
    '{"max_campaigns": 3, "max_influencers": 20, "ai_matching": false, "analytics": "basic", "support": "email", "brand_safety": false}'::jsonb,
@@ -65,8 +72,18 @@ INSERT INTO public.subscription_plans (name, display_name, tier, price_monthly_c
    '{"max_campaigns": -1, "max_influencers": -1, "ai_matching": true, "analytics": "enterprise", "support": "24/7", "brand_safety": true, "custom_reports": true, "dedicated_account_manager": true, "api_access": true, "white_label": false}'::jsonb,
    '{"campaigns_per_month": -1, "collaborations_per_month": -1, "api_calls_per_day": -1}'::jsonb,
    3)
-;
-INSERT INTO public.affiliate_tier_rules (program_id, tier_level, tier_name, min_referrals, min_revenue_cents, commission_rate, parent_commission_rate) VALUES
-  ((SELECT id FROM public.affiliate_programs WHERE name = 'Standard Referral Program' LIMIT 1), 1, 'Bronze', 0, 0, 0.1000, 0.0200),
-  ((SELECT id FROM public.affiliate_programs WHERE name = 'Standard Referral Program' LIMIT 1), 2, 'Silver', 10, 100000, 0.1250, 0.0250),
-  ((SELECT id FROM public.affiliate_programs WHERE name = 'Standard Referral Program' LIMIT 1), 3, 'Gold', 50, 500000, 0.1500, 0.0300);
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO public.affiliate_tier_rules (program_id, tier_level, tier_name, min_referrals, min_revenue_cents, commission_rate, parent_commission_rate)
+SELECT p.id, v.tier_level, v.tier_name, v.min_referrals, v.min_revenue_cents, v.commission_rate, v.parent_commission_rate
+FROM public.affiliate_programs p
+CROSS JOIN (VALUES
+  (1, 'Bronze', 0, 0, 0.1000, 0.0200),
+  (2, 'Silver', 10, 100000, 0.1250, 0.0250),
+  (3, 'Gold', 50, 500000, 0.1500, 0.0300)
+) AS v(tier_level, tier_name, min_referrals, min_revenue_cents, commission_rate, parent_commission_rate)
+WHERE p.name = 'Standard Referral Program'
+  AND NOT EXISTS (
+    SELECT 1 FROM public.affiliate_tier_rules r
+    WHERE r.program_id = p.id AND r.tier_level = v.tier_level
+  );

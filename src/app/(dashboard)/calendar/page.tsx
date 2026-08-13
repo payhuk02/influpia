@@ -3,8 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, FileText, Plus, CheckCircle, AlertTriangle, Copy, Settings } from "lucide-react";
+import { Calendar, Clock, FileText, CheckCircle, AlertTriangle, Copy, Settings } from "lucide-react";
 import { getScheduledContent, getContentTemplates, getSchedulingRules } from "../actions/scheduling";
+import {
+  CreateScheduledContentButton,
+  CreateContentTemplateButton,
+  CreateSchedulingRuleButton,
+} from "@/components/dashboard/feature-forms";
 
 export default async function CalendarPage() {
   const supabase = await createClient();
@@ -29,10 +34,7 @@ export default async function CalendarPage() {
             Planifiez et gérez votre contenu à l'avance.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouveau Rendez-vous
-        </Button>
+        <CreateScheduledContentButton />
       </div>
 
       <Tabs defaultValue="calendar" className="space-y-6">
@@ -70,10 +72,7 @@ export default async function CalendarPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucun contenu programmé</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Programmer du contenu
-                  </Button>
+                  <CreateScheduledContentButton label="Programmer du contenu" className="mt-4" />
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -132,10 +131,7 @@ export default async function CalendarPage() {
                   <CardTitle>Modèles de contenu</CardTitle>
                   <CardDescription>Créez et réutilisez des modèles de publication</CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nouveau Modèle
-                </Button>
+                <CreateContentTemplateButton />
               </div>
             </CardHeader>
             <CardContent>
@@ -143,10 +139,7 @@ export default async function CalendarPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucun modèle créé</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Créer un modèle
-                  </Button>
+                  <CreateContentTemplateButton label="Créer un modèle" className="mt-4" />
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -184,10 +177,7 @@ export default async function CalendarPage() {
                   <CardTitle>Règles de programmation</CardTitle>
                   <CardDescription>Automatisez la planification de votre contenu</CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nouvelle Règle
-                </Button>
+                <CreateSchedulingRuleButton />
               </div>
             </CardHeader>
             <CardContent>
@@ -195,10 +185,7 @@ export default async function CalendarPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <Settings className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune règle configurée</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Créer une règle
-                  </Button>
+                  <CreateSchedulingRuleButton label="Créer une règle" className="mt-4" />
                 </div>
               ) : (
                 <div className="space-y-3">

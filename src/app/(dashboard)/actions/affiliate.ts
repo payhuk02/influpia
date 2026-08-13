@@ -190,11 +190,7 @@ export async function getTierRules(programId: string) {
 
 // Get affiliate programs
 export async function getAffiliatePrograms() {
-  const { data, error } = await getAdminClient()
-    .from('affiliate_programs')
-    .select('*')
-    .eq('is_active', true);
-
-  if (error) throw error;
-  return data;
+  return readList('getAffiliatePrograms', (supabase) =>
+    supabase.from('affiliate_programs').select('*').eq('is_active', true)
+  );
 }

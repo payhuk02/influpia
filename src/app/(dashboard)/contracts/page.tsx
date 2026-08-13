@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContractCard } from "@/components/contracts/contract-card";
-import { FileText, Plus, Filter } from "lucide-react";
+import { FileText, Filter } from "lucide-react";
 import { getUserContracts, getContractTemplates } from "../actions/contracts";
+import { getCollaborationOptions } from "../actions/form-actions";
+import { CreateContractButton, UseContractTemplateButton } from "@/components/dashboard/feature-forms";
 
 export default async function ContractsPage() {
   const supabase = await createClient();
@@ -19,6 +21,7 @@ export default async function ContractsPage() {
   // Fetch contracts
   const contracts = await getUserContracts(user.id, isBrand ? 'brand' : 'influencer');
   const templates = await getContractTemplates();
+  const collaborations = await getCollaborationOptions(user.id);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4">
@@ -29,10 +32,7 @@ export default async function ContractsPage() {
             Gérez vos contrats de collaboration et suivez les jalons.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouveau Contrat
-        </Button>
+        <CreateContractButton templates={templates ?? []} collaborations={collaborations} />
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
@@ -52,10 +52,11 @@ export default async function ContractsPage() {
                 <p className="text-white/60 text-center max-w-md mb-6">
                   Vous n'avez pas encore de contrat. Créez un nouveau contrat pour commencer une collaboration.
                 </p>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Créer un Contrat
-                </Button>
+                <CreateContractButton
+                  templates={templates ?? []}
+                  collaborations={collaborations}
+                  label="Créer un Contrat"
+                />
               </CardContent>
             </Card>
           ) : (
@@ -139,9 +140,12 @@ export default async function ContractsPage() {
                   <CardDescription className="text-xs">{template.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" size="sm" className="w-full border-white/10">
-                    Utiliser ce modèle
-                  </Button>
+                  <UseContractTemplateButton
+                    templateId={template.id}
+                    templateName={template.display_name}
+                    templates={templates ?? []}
+                    collaborations={collaborations}
+                  />
                 </CardContent>
               </Card>
             ))}

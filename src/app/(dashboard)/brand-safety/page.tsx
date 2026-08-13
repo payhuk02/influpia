@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, CheckCircle, AlertTriangle, Search, Upload, FileText, Plus, Settings } from "lucide-react";
+import { Shield, CheckCircle, AlertTriangle, Search, Upload, FileText, Settings } from "lucide-react";
 import { getBrandSafetyCategories, getBrandSafetyPreferences } from "../actions/brand-safety";
+import { CreateVettingButton } from "@/components/dashboard/feature-forms";
 
 export default async function BrandSafetyPage() {
   const supabase = await createClient();
@@ -24,10 +25,7 @@ export default async function BrandSafetyPage() {
             Vérifiez et validez les influenceurs pour assurer la sécurité de votre marque.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle Vérification
-        </Button>
+        <CreateVettingButton />
       </div>
 
       <Tabs defaultValue="vetting" className="space-y-6">
@@ -49,10 +47,7 @@ export default async function BrandSafetyPage() {
                 <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Aucune vérification en cours</p>
                 <p className="text-sm mt-2">Sélectionnez un influenceur pour lancer une vérification</p>
-                <Button className="mt-4 bg-primary hover:bg-primary/90">
-                  <Search className="w-4 h-4 mr-2" />
-                  Rechercher un influenceur
-                </Button>
+                <CreateVettingButton label="Rechercher un influenceur" />
               </div>
             </CardContent>
           </Card>

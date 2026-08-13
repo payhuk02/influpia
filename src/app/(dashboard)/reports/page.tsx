@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Calendar, Share2, Star, Download, Plus, Clock, BarChart3 } from "lucide-react";
+import { FileText, Calendar, Share2, Star, Download, Clock, BarChart3 } from "lucide-react";
 import { getReportTemplates, getGeneratedReports, getScheduledReports, getFavoriteReports } from "../actions/reporting";
+import { CreateReportButton, UseReportTemplateButton } from "@/components/dashboard/feature-forms";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
@@ -26,10 +27,7 @@ export default async function ReportsPage() {
             Générez et gérez vos rapports personnalisés.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Nouveau Rapport
-        </Button>
+        <CreateReportButton templates={templates ?? []} />
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
@@ -51,10 +49,7 @@ export default async function ReportsPage() {
                 <div className="text-center py-10 text-white/40 border border-white/5 rounded-xl border-dashed">
                   <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucun rapport généré</p>
-                  <Button className="mt-4 bg-primary hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Créer un rapport
-                  </Button>
+                  <CreateReportButton templates={templates ?? []} label="Créer un rapport" className="mt-4" />
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -143,10 +138,7 @@ export default async function ReportsPage() {
                   <CardTitle>Rapports planifiés</CardTitle>
                   <CardDescription>Rapports générés automatiquement</CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Planifier un rapport
-                </Button>
+                <CreateReportButton templates={templates ?? []} label="Planifier un rapport" />
               </div>
             </CardHeader>
             <CardContent>
@@ -206,9 +198,11 @@ export default async function ReportsPage() {
                         <Badge variant="outline" className="bg-white/5 text-white/60 border-white/10 text-xs">
                           {template.category}
                         </Badge>
-                        <Button variant="outline" size="sm" className="w-full border-white/10">
-                          Utiliser ce modèle
-                        </Button>
+                        <UseReportTemplateButton
+                          templateId={template.id}
+                          templateName={template.display_name}
+                          reportType={template.report_type}
+                        />
                       </div>
                     </CardContent>
                   </Card>

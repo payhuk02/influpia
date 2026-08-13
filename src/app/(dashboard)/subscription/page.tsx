@@ -1,10 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Crown, Zap, Star, ArrowRight, AlertTriangle } from "lucide-react";
+import { Check, Crown, Zap, Star, AlertTriangle } from "lucide-react";
 import { getSubscriptionPlans, getUserSubscription, getUserUsage } from "../actions/subscriptions";
+import { SubscribePlanButton, PurchaseAddOnButton } from "@/components/dashboard/feature-forms";
 
 export default async function SubscriptionPage() {
   const supabase = await createClient();
@@ -132,7 +132,7 @@ export default async function SubscriptionPage() {
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">
-                    {(plan.price_cents / 100).toFixed(0)}
+                    {((plan.price_monthly_cents ?? plan.price_cents ?? 0) / 100).toFixed(0)}
                   </span>
                   <span className="text-white/60">€/mois</span>
                 </div>
@@ -189,17 +189,15 @@ export default async function SubscriptionPage() {
                   </li>
                 </ul>
 
-                <Button
+                <SubscribePlanButton
+                  planId={plan.id}
+                  isCurrent={isCurrentPlan}
                   className={`w-full ${
                     isCurrentPlan
                       ? 'bg-white/10 text-white/60 cursor-not-allowed'
                       : 'bg-primary hover:bg-primary/90'
                   }`}
-                  disabled={isCurrentPlan}
-                >
-                  {isCurrentPlan ? 'Plan actuel' : 'Choisir ce plan'}
-                  {!isCurrentPlan && <ArrowRight className="w-4 h-4 ml-2" />}
-                </Button>
+                />
               </CardContent>
             </Card>
           );
@@ -221,9 +219,7 @@ export default async function SubscriptionPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-3">5 000 €</div>
-                <Button variant="outline" size="sm" className="w-full border-white/10">
-                  Ajouter
-                </Button>
+                <PurchaseAddOnButton addOnType="extra_campaigns" priceCents={500000} />
               </CardContent>
             </Card>
 
@@ -234,9 +230,7 @@ export default async function SubscriptionPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-3">3 000 €</div>
-                <Button variant="outline" size="sm" className="w-full border-white/10">
-                  Ajouter
-                </Button>
+                <PurchaseAddOnButton addOnType="extra_influencers" priceCents={300000} />
               </CardContent>
             </Card>
 
@@ -247,9 +241,7 @@ export default async function SubscriptionPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-3">2 000 €</div>
-                <Button variant="outline" size="sm" className="w-full border-white/10">
-                  Ajouter
-                </Button>
+                <PurchaseAddOnButton addOnType="brand_safety_report" priceCents={200000} />
               </CardContent>
             </Card>
           </div>

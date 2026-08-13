@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Star, Flame, Medal, Award, TrendingUp, Lock } from "lucide-react";
 import { getUserXP, getUserBadges, getLeaderboard, getUserAchievements, getUserLevels } from "../actions/gamification";
+import { ClaimRewardButton } from "@/components/dashboard/feature-forms";
 
 export default async function GamificationPage() {
   const supabase = await createClient();
@@ -228,10 +229,7 @@ export default async function GamificationPage() {
                       <span>{progressPercent.toFixed(0)}%</span>
                     </div>
                     {progress.is_completed && !progress.reward_claimed && (
-                      <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
-                        <Award className="w-4 h-4 mr-1" />
-                        Réclamer récompense
-                      </Button>
+                      <ClaimRewardButton progressId={progress.id} />
                     )}
                   </CardContent>
                 </Card>
