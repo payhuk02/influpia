@@ -245,7 +245,7 @@ export async function appealModeration(queueId: string, userId: string, appealRe
     .update({
       appealed_by: userId,
       appealed_at: new Date().toISOString(),
-      appeal_reason,
+      appeal_reason: appealReason,
       appeal_status: 'pending',
       updated_at: new Date().toISOString(),
     })

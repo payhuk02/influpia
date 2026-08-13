@@ -41,7 +41,7 @@ export default async function CalendarPage() {
           <TabsTrigger value="scheduled">Programmé</TabsTrigger>
           <TabsTrigger value="templates">Modèles</TabsTrigger>
           <TabsTrigger value="rules">Règles</TabsTrigger>
-        </TabsList>
+        </TabsContent>
 
         <TabsContent value="calendar" className="space-y-6">
           <Card className="bg-black/40 border-white/10">

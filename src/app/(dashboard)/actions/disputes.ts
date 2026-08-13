@@ -34,11 +34,11 @@ export async function createDispute(disputeData: {
   
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId: data.id,
+    dispute_id: data.id,
     action: 'created',
     actor_id: disputeData.raised_by,
-    actorType: 'brand',
-    newStatus: 'open',
+    actor_type: 'brand',
+    new_status: 'open',
     created_at: new Date().toISOString(),
   });
 
@@ -80,7 +80,7 @@ export async function getDisputeMessages(disputeId: string) {
   const { data, error } = await supabase
     .from('dispute_messages')
     .select('*')
-    .eq('disputeId', disputeId)
+    .eq('dispute_id', disputeId)
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -99,11 +99,11 @@ export async function addDisputeMessage(
   const { data, error } = await supabase
     .from('dispute_messages')
     .insert({
-      disputeId: disputeId,
+      dispute_id: disputeId,
       sender_id: senderId,
-      sender_type: senderType,
+      sender_type,
       message,
-      is_internal: isInternal,
+      is_internal,
       attachments,
       created_at: new Date().toISOString(),
     })
@@ -114,10 +114,10 @@ export async function addDisputeMessage(
   
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId,
+    dispute_id,
     action: 'message_added',
     actor_id: senderId,
-    actorType: senderType,
+    actor_type: senderType,
     created_at: new Date().toISOString(),
   });
 
@@ -130,7 +130,7 @@ export async function getDisputeTimeline(disputeId: string) {
   const { data, error } = await supabase
     .from('dispute_timeline')
     .select('*')
-    .eq('disputeId', disputeId)
+    .eq('dispute_id', disputeId)
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -158,11 +158,11 @@ export async function updateDisputeStatus(
 
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId,
+    dispute_id,
     action: 'status_changed',
     actor_id: actorId,
-    actorType,
-    newStatus,
+    actor_type,
+    new_status,
     previous_status: data.status,
     created_at: new Date().toISOString(),
   });
@@ -188,10 +188,10 @@ export async function escalateDispute(disputeId: string, reason: string) {
 
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId,
+    dispute_id,
     action: 'escalated',
-    actorType: 'system',
-    newStatus: 'escalated',
+    actor_type: 'system',
+    new_status: 'escalated',
     notes: reason,
     created_at: new Date().toISOString(),
   });
@@ -225,11 +225,11 @@ export async function resolveDispute(
 
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId,
+    dispute_id,
     action: 'resolved',
     actor_id: resolvedBy,
-    actorType: 'admin',
-    newStatus: 'resolved',
+    actor_type: 'admin',
+    new_status: 'resolved',
     notes: resolutionDetails,
     created_at: new Date().toISOString(),
   });
@@ -243,7 +243,7 @@ export async function getRefundTransactions(disputeId?: string) {
   let query = supabase.from('refund_transactions').select('*');
   
   if (disputeId) {
-    query = query.eq('disputeId', disputeId);
+    query = query.eq('dispute_id', disputeId);
   }
   
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -264,11 +264,11 @@ export async function processRefund(
   const { data, error } = await supabase
     .from('refund_transactions')
     .insert({
-      disputeId: disputeId,
+      dispute_id: disputeId,
       collaboration_id: collaborationId,
       refund_amount_cents: refundAmountCents,
-      refundType,
-      refundReason,
+      refund_type,
+      refund_reason,
       status: 'pending',
       provider,
       platform_fee_cents: Math.round(refundAmountCents * 0.05),
@@ -290,7 +290,7 @@ export async function appealDispute(disputeId: string, userId: string, appealRea
     .update({
       appealed_by: userId,
       appealed_at: new Date().toISOString(),
-      appealReason,
+      appeal_reason,
       appeal_status: 'pending',
       updated_at: new Date().toISOString(),
     })
@@ -326,10 +326,10 @@ export async function reviewAppeal(
 
   // Log timeline
   await supabase.from('dispute_timeline').insert({
-    disputeId,
+    dispute_id,
     action: approved ? 'appeal_approved' : 'appeal_rejected',
     actor_id: reviewedBy,
-    actorType: 'admin',
+    actor_type: 'admin',
     notes,
     created_at: new Date().toISOString(),
   });
