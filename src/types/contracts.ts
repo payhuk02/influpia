@@ -37,6 +37,8 @@ export interface Contract {
   termination_reason?: string;
   created_at: string;
   updated_at: string;
+  template?: Pick<ContractTemplate, 'name'>;
+  collaboration?: { agreed_amount: number };
 }
 
 export interface Milestone {

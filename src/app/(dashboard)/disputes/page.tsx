@@ -23,6 +23,8 @@ export default async function DisputesPage() {
     closed: { label: 'Fermé', color: 'bg-gray-500/10 text-gray-400 border-gray-500/20', icon: FileText },
   };
 
+  type DisputeStatus = keyof typeof statusConfig;
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center justify-between">
@@ -64,7 +66,7 @@ export default async function DisputesPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {disputes?.map((dispute) => {
-                const config = statusConfig[dispute.status] || statusConfig.open;
+                const config = statusConfig[dispute.status as DisputeStatus] ?? statusConfig.open;
                 const StatusIcon = config.icon;
 
                 return (
@@ -150,7 +152,7 @@ export default async function DisputesPage() {
             {disputes
               ?.filter(d => d.status === 'open' || d.status === 'under_review')
               .map((dispute) => {
-                const config = statusConfig[dispute.status] || statusConfig.open;
+                const config = statusConfig[dispute.status as DisputeStatus] ?? statusConfig.open;
                 const StatusIcon = config.icon;
 
                 return (
@@ -186,7 +188,7 @@ export default async function DisputesPage() {
             {disputes
               ?.filter(d => d.status === 'mediating' || d.status === 'escalated')
               .map((dispute) => {
-                const config = statusConfig[dispute.status] || statusConfig.open;
+                const config = statusConfig[dispute.status as DisputeStatus] ?? statusConfig.open;
                 const StatusIcon = config.icon;
 
                 return (
@@ -222,7 +224,7 @@ export default async function DisputesPage() {
             {disputes
               ?.filter(d => d.status === 'resolved' || d.status === 'closed')
               .map((dispute) => {
-                const config = statusConfig[dispute.status] || statusConfig.open;
+                const config = statusConfig[dispute.status as DisputeStatus] ?? statusConfig.open;
                 const StatusIcon = config.icon;
 
                 return (

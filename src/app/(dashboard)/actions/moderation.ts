@@ -261,7 +261,7 @@ export async function appealModeration(queueId: string, userId: string, appealRe
     action_type: 'appealed',
     actor_id: userId,
     actor_type: 'user',
-    action_details: { appeal_reason },
+    action_details: { appeal_reason: appealReason },
     created_at: new Date().toISOString(),
   });
 

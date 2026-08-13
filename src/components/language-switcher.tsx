@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,12 +19,10 @@ export function LanguageSwitcher({ currentLanguage, onLanguageChange }: Language
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <span className="text-lg">{getLanguageFlag(currentLanguage)}</span>
-          <span className="hidden sm:inline">{currentLang.nativeName}</span>
-          <Globe className="w-4 h-4" />
-        </Button>
+      <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 px-3">
+        <span className="text-lg">{getLanguageFlag(currentLanguage)}</span>
+        <span className="hidden sm:inline">{currentLang.nativeName}</span>
+        <Globe className="w-4 h-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {languages.map((language) => (

@@ -203,7 +203,7 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
                       <Globe className="w-4 h-4" />
                       Langue
                     </Label>
-                    <Select value={regionalSettings.language} onValueChange={(value) => setRegionalSettings({...regionalSettings, language: value})}>
+                    <Select value={regionalSettings.language} onValueChange={(value) => value && setRegionalSettings({...regionalSettings, language: value})}>
                       <SelectTrigger className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>
@@ -222,7 +222,7 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
                       <Clock className="w-4 h-4" />
                       Fuseau horaire
                     </Label>
-                    <Select value={regionalSettings.timezone} onValueChange={(value) => setRegionalSettings({...regionalSettings, timezone: value})}>
+                    <Select value={regionalSettings.timezone} onValueChange={(value) => value && setRegionalSettings({...regionalSettings, timezone: value})}>
                       <SelectTrigger className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>
@@ -236,7 +236,7 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
 
                   <div className="space-y-2">
                     <Label>Devise</Label>
-                    <Select value={regionalSettings.currency} onValueChange={(value) => setRegionalSettings({...regionalSettings, currency: value})}>
+                    <Select value={regionalSettings.currency} onValueChange={(value) => value && setRegionalSettings({...regionalSettings, currency: value})}>
                       <SelectTrigger className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>
@@ -256,7 +256,7 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
                         <Calendar className="w-4 h-4" />
                         Format de date
                       </Label>
-                      <Select value={regionalSettings.dateFormat} onValueChange={(value) => setRegionalSettings({...regionalSettings, dateFormat: value})}>
+                      <Select value={regionalSettings.dateFormat} onValueChange={(value) => value && setRegionalSettings({...regionalSettings, dateFormat: value})}>
                         <SelectTrigger className="bg-white/5 border-white/10">
                           <SelectValue />
                         </SelectTrigger>
@@ -285,7 +285,7 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
 
                   <div className="space-y-2">
                     <Label>Premier jour de la semaine</Label>
-                    <Select value={regionalSettings.firstDayOfWeek.toString()} onValueChange={(value) => setRegionalSettings({...regionalSettings, firstDayOfWeek: parseInt(value)})}>
+                    <Select value={regionalSettings.firstDayOfWeek.toString()} onValueChange={(value) => value && setRegionalSettings({...regionalSettings, firstDayOfWeek: parseInt(value)})}>
                       <SelectTrigger className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>

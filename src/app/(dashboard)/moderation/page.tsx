@@ -30,6 +30,8 @@ export default async function ModerationPage() {
     escalated: { label: 'Escaladé', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', icon: AlertTriangle },
   };
 
+  type ModerationStatus = keyof typeof statusConfig;
+
   if (!isAdmin) {
     return (
       <div className="space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4">
@@ -130,7 +132,7 @@ export default async function ModerationPage() {
               ) : (
                 <div className="space-y-3">
                   {queue?.map((item) => {
-                    const config = statusConfig[item.moderation_status] || statusConfig.pending;
+                    const config = statusConfig[item.moderation_status as ModerationStatus] ?? statusConfig.pending;
                     const StatusIcon = config.icon;
 
                     return (
