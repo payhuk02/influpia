@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Create dispute
 export async function createDispute(disputeData: {
@@ -18,7 +13,7 @@ export async function createDispute(disputeData: {
   description: string;
   evidence_urls?: string[];
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .insert({
       ...disputeData,
@@ -33,7 +28,7 @@ export async function createDispute(disputeData: {
   if (error) throw error;
   
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: data.id,
     action: 'created',
     actor_id: disputeData.raised_by,
@@ -48,7 +43,7 @@ export async function createDispute(disputeData: {
 
 // Get disputes for user
 export async function getUserDisputes(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .select(`
       *,
@@ -65,7 +60,7 @@ export async function getUserDisputes(userId: string) {
 
 // Get dispute by ID
 export async function getDisputeById(disputeId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .select('*')
     .eq('id', disputeId)
@@ -77,7 +72,7 @@ export async function getDisputeById(disputeId: string) {
 
 // Get dispute messages
 export async function getDisputeMessages(disputeId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('dispute_messages')
     .select('*')
     .eq('dispute_id', disputeId)
@@ -96,7 +91,7 @@ export async function addDisputeMessage(
   isInternal: boolean = false,
   attachments: string[] = []
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('dispute_messages')
     .insert({
       dispute_id: disputeId,
@@ -113,7 +108,7 @@ export async function addDisputeMessage(
   if (error) throw error;
   
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: disputeId,
     action: 'message_added',
     actor_id: senderId,
@@ -127,7 +122,7 @@ export async function addDisputeMessage(
 
 // Get dispute timeline
 export async function getDisputeTimeline(disputeId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('dispute_timeline')
     .select('*')
     .eq('dispute_id', disputeId)
@@ -144,7 +139,7 @@ export async function updateDisputeStatus(
   actorId: string,
   actorType: 'admin' | 'moderator'
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .update({
       status: newStatus,
@@ -157,7 +152,7 @@ export async function updateDisputeStatus(
   if (error) throw error;
 
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: disputeId,
     action: 'status_changed',
     actor_id: actorId,
@@ -173,7 +168,7 @@ export async function updateDisputeStatus(
 
 // Escalate dispute
 export async function escalateDispute(disputeId: string, reason: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .update({
       status: 'escalated',
@@ -187,7 +182,7 @@ export async function escalateDispute(disputeId: string, reason: string) {
   if (error) throw error;
 
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: disputeId,
     action: 'escalated',
     actor_type: 'system',
@@ -207,7 +202,7 @@ export async function resolveDispute(
   resolutionDetails: string,
   resolvedBy: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .update({
       status: 'resolved',
@@ -224,7 +219,7 @@ export async function resolveDispute(
   if (error) throw error;
 
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: disputeId,
     action: 'resolved',
     actor_id: resolvedBy,
@@ -240,7 +235,7 @@ export async function resolveDispute(
 
 // Get refund transactions
 export async function getRefundTransactions(disputeId?: string) {
-  let query = supabase.from('refund_transactions').select('*');
+  let query = getAdminClient().from('refund_transactions').select('*');
   
   if (disputeId) {
     query = query.eq('dispute_id', disputeId);
@@ -261,7 +256,7 @@ export async function processRefund(
   refundReason: string,
   provider: 'fedapay' | 'stripe' | 'moneyfusion'
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('refund_transactions')
     .insert({
       dispute_id: disputeId,
@@ -285,7 +280,7 @@ export async function processRefund(
 
 // Appeal dispute
 export async function appealDispute(disputeId: string, userId: string, appealReason: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .update({
       appealed_by: userId,
@@ -310,7 +305,7 @@ export async function reviewAppeal(
   approved: boolean,
   notes?: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('disputes')
     .update({
       appeal_status: approved ? 'approved' : 'rejected',
@@ -325,7 +320,7 @@ export async function reviewAppeal(
   if (error) throw error;
 
   // Log timeline
-  await supabase.from('dispute_timeline').insert({
+  await getAdminClient().from('dispute_timeline').insert({
     dispute_id: disputeId,
     action: approved ? 'appeal_approved' : 'appeal_rejected',
     actor_id: reviewedBy,

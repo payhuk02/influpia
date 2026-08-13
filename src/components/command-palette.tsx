@@ -2,40 +2,29 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getCommandPaletteCommands } from "@/config/dashboard-nav";
 
 type Command = { label: string; hint: string; path: string; group: string };
 
-const COMMON: Command[] = [
-  { label: "Messagerie", hint: "Ouvrir les conversations", path: "/messages", group: "Navigation" },
-  { label: "Statistiques", hint: "Performance et revenus", path: "/analytics", group: "Navigation" },
+const EXTRA: Command[] = [
   { label: "Paramètres", hint: "Profil et préférences", path: "/settings", group: "Compte" },
-  { label: "Tableau de bord", hint: "Vue d'ensemble", path: "/dashboard", group: "Navigation" },
-];
-
-const BRAND: Command[] = [
-  { label: "Créer une campagne", hint: "Nouveau brief sponsorisé", path: "/brand/campaigns/new", group: "Actions" },
-  { label: "Découverte IA", hint: "Trouver des influenceurs", path: "/brand/discovery", group: "Actions" },
-  { label: "Espace marque", hint: "Campagnes et collaborations", path: "/brand", group: "Navigation" },
-];
-
-const INFLUENCER: Command[] = [
-  { label: "Marketplace", hint: "Campagnes disponibles", path: "/influencer/campaigns", group: "Actions" },
-  { label: "Mes prestations", hint: "Gérer mes offres", path: "/influencer/services", group: "Actions" },
   { label: "Créer une prestation", hint: "Nouvelle offre de service", path: "/influencer/services/new", group: "Actions" },
-  { label: "Espace créateur", hint: "Missions et revenus", path: "/influencer", group: "Navigation" },
 ];
 
-export function CommandPalette({ role }: { role: string }) {
+export function CommandPalette({ role, isAdmin = false }: { role: string; isAdmin?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const commands = useMemo(
-    () => [...(role === "brand" ? BRAND : INFLUENCER), ...COMMON],
-    [role]
-  );
+  const commands = useMemo(() => {
+    const navCommands = getCommandPaletteCommands(role, isAdmin);
+    const extras = role === "influencer"
+      ? EXTRA
+      : EXTRA.filter((command) => command.path !== "/influencer/services/new");
+    return [...navCommands, ...extras];
+  }, [role, isAdmin]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

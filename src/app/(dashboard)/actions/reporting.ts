@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get report templates
 export async function getReportTemplates() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('report_templates')
     .select('*')
     .eq('is_active', true)
@@ -30,7 +25,7 @@ export async function createReport(reportData: {
   parameters: Record<string, any>;
   file_format?: 'pdf' | 'xlsx' | 'csv';
 }) {
-  const { data, error } = await supabase.rpc('create_report', {
+  const { data, error } = await getAdminClient().rpc('create_report', {
     p_user_id: reportData.user_id,
     p_template_id: reportData.template_id,
     p_report_name: reportData.report_name,
@@ -46,7 +41,7 @@ export async function createReport(reportData: {
 
 // Get generated reports for user
 export async function getGeneratedReports(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('generated_reports')
     .select(`
       *,
@@ -66,7 +61,7 @@ export async function generateCampaignPerformanceReport(
   startDate: string,
   endDate: string
 ) {
-  const { data, error } = await supabase.rpc('generate_campaign_performance_report', {
+  const { data, error } = await getAdminClient().rpc('generate_campaign_performance_report', {
     p_user_id: userId,
     p_campaign_id: campaignId,
     p_start_date: startDate,
@@ -84,7 +79,7 @@ export async function generateFinancialSummaryReport(
   startDate: string,
   endDate: string
 ) {
-  const { data, error } = await supabase.rpc('generate_financial_summary_report', {
+  const { data, error } = await getAdminClient().rpc('generate_financial_summary_report', {
     p_user_id: userId,
     p_start_date: startDate,
     p_end_date: endDate,
@@ -107,7 +102,7 @@ export async function scheduleReport(scheduleData: {
   delivery_method: 'email' | 'webhook' | 'both';
   recipients: string[];
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduled_reports')
     .insert({
       ...scheduleData,
@@ -124,7 +119,7 @@ export async function scheduleReport(scheduleData: {
 
 // Get scheduled reports for user
 export async function getScheduledReports(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduled_reports')
     .select('*')
     .eq('user_id', userId)
@@ -136,7 +131,7 @@ export async function getScheduledReports(userId: string) {
 
 // Process scheduled reports
 export async function processScheduledReports() {
-  const { error } = await supabase.rpc('process_scheduled_reports');
+  const { error } = await getAdminClient().rpc('process_scheduled_reports');
   if (error) throw error;
 }
 
@@ -147,7 +142,7 @@ export async function shareReport(reportId: string, shareData: {
   permissions: Record<string, boolean>;
   expires_at?: string;
 }) {
-  const { data, error } = await supabase.rpc('generate_report_share_token', {
+  const { data, error } = await getAdminClient().rpc('generate_report_share_token', {
     p_report_id: reportId,
     p_share_with: shareData.shared_with,
     p_share_type: shareData.share_type,
@@ -162,7 +157,7 @@ export async function shareReport(reportId: string, shareData: {
 
 // Get report shares
 export async function getReportShares(reportId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('report_shares')
     .select('*')
     .eq('report_id', reportId)
@@ -174,7 +169,7 @@ export async function getReportShares(reportId: string) {
 
 // Add report to favorites
 export async function addReportFavorite(userId: string, reportId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('report_favorites')
     .insert({
       user_id: userId,
@@ -191,7 +186,7 @@ export async function addReportFavorite(userId: string, reportId: string) {
 
 // Remove report from favorites
 export async function removeReportFavorite(userId: string, reportId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('report_favorites')
     .delete()
     .eq('user_id', userId)
@@ -203,7 +198,7 @@ export async function removeReportFavorite(userId: string, reportId: string) {
 
 // Get favorite reports
 export async function getFavoriteReports(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('report_favorites')
     .select(`
       *,

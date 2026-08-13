@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Create scheduled content
 export async function createScheduledContent(contentData: {
@@ -20,7 +15,7 @@ export async function createScheduledContent(contentData: {
   media_urls?: string[];
   tags?: string[];
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduled_content')
     .insert({
       ...contentData,
@@ -37,7 +32,7 @@ export async function createScheduledContent(contentData: {
 
 // Get scheduled content for user
 export async function getScheduledContent(userId: string, startDate?: string, endDate?: string) {
-  let query = supabase
+  let query = getAdminClient()
     .from('scheduled_content')
     .select('*')
     .eq('user_id', userId)
@@ -63,7 +58,7 @@ export async function updateScheduledContentStatus(contentId: string, status: 'd
     updateData.posted_at = new Date().toISOString();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduled_content')
     .update(updateData)
     .eq('id', contentId)
@@ -80,7 +75,7 @@ export async function getContentCalendarEntries(userId: string, year: number, mo
   const startDate = new Date(year, month - 1, 1).toISOString();
   const endDate = new Date(year, month, 0).toISOString();
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_calendar')
     .select('*')
     .eq('user_id', userId)
@@ -102,7 +97,7 @@ export async function createContentTemplate(templateData: {
   default_caption?: string;
   tags?: string[];
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_templates')
     .insert({
       ...templateData,
@@ -119,7 +114,7 @@ export async function createContentTemplate(templateData: {
 
 // Get content templates
 export async function getContentTemplates(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_templates')
     .select('*')
     .eq('user_id', userId)
@@ -132,7 +127,7 @@ export async function getContentTemplates(userId: string) {
 
 // Get scheduling rules
 export async function getSchedulingRules(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduling_rules')
     .select('*')
     .eq('user_id', userId)
@@ -153,7 +148,7 @@ export async function createSchedulingRule(ruleData: {
   min_posts_per_day?: number;
   max_posts_per_day?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('scheduling_rules')
     .insert({
       ...ruleData,
@@ -170,7 +165,7 @@ export async function createSchedulingRule(ruleData: {
 
 // Get content approvals
 export async function getContentApprovals(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_approvals')
     .select('*')
     .eq('requested_by', userId)
@@ -183,7 +178,7 @@ export async function getContentApprovals(userId: string) {
 
 // Request content approval
 export async function requestContentApproval(contentId: string, reviewerId: string, requestedBy: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_approvals')
     .insert({
       content_id: contentId,
@@ -202,7 +197,7 @@ export async function requestContentApproval(contentId: string, reviewerId: stri
 
 // Approve content
 export async function approveContent(approvalId: string, approvedBy: string, notes?: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_approvals')
     .update({
       status: 'approved',
@@ -221,7 +216,7 @@ export async function approveContent(approvalId: string, approvedBy: string, not
 
 // Reject content
 export async function rejectContent(approvalId: string, rejectedBy: string, reason: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_approvals')
     .update({
       status: 'rejected',
@@ -240,7 +235,7 @@ export async function rejectContent(approvalId: string, rejectedBy: string, reas
 
 // Get content analytics
 export async function getContentAnalytics(contentId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_analytics')
     .select('*')
     .eq('content_id', contentId)
@@ -260,7 +255,7 @@ export async function updateContentAnalytics(contentId: string, analyticsData: {
   reach?: number;
   impressions?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('content_analytics')
     .upsert({
       content_id: contentId,

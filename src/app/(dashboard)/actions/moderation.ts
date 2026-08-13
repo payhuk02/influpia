@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Submit content for moderation
 export async function submitForModeration(contentData: {
@@ -15,7 +10,7 @@ export async function submitForModeration(contentData: {
   content_data: Record<string, any>;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_queue')
     .insert({
       ...contentData,
@@ -37,7 +32,7 @@ export async function submitForModeration(contentData: {
 
 // Get moderation queue
 export async function getModerationQueue(status?: string, limit: number = 50) {
-  let query = supabase
+  let query = getAdminClient()
     .from('moderation_queue')
     .select('*')
     .order('priority', { ascending: false })
@@ -55,7 +50,7 @@ export async function getModerationQueue(status?: string, limit: number = 50) {
 
 // Run auto-moderation
 export async function runAutoModeration(queueId: string) {
-  const { error } = await supabase.rpc('run_auto_moderation', {
+  const { error } = await getAdminClient().rpc('run_auto_moderation', {
     p_queue_id: queueId,
   });
 
@@ -70,7 +65,7 @@ export async function manualModerationAction(
   reviewerId: string,
   notes?: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_queue')
     .update({
       moderation_status: action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : action === 'escalate' ? 'escalated' : 'flagged',
@@ -87,7 +82,7 @@ export async function manualModerationAction(
   if (error) throw error;
 
   // Log action
-  await supabase.from('moderation_actions_log').insert({
+  await getAdminClient().from('moderation_actions_log').insert({
     moderation_queue_id: queueId,
     action_type: action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : action,
     actor_id: reviewerId,
@@ -103,7 +98,7 @@ export async function manualModerationAction(
 
 // Get moderation rules
 export async function getModerationRules() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_rules')
     .select('*')
     .eq('is_active', true)
@@ -122,7 +117,7 @@ export async function createModerationRule(ruleData: {
   action: 'flag' | 'auto_reject' | 'auto_approve' | 'require_review';
   severity: 'low' | 'medium' | 'high' | 'critical';
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_rules')
     .insert({
       ...ruleData,
@@ -139,7 +134,7 @@ export async function createModerationRule(ruleData: {
 
 // Get blocked content
 export async function getBlockedContent() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('blocked_content')
     .select('*')
     .order('created_at', { ascending: false });
@@ -156,7 +151,7 @@ export async function addBlockedContent(blockedData: {
   is_regex?: boolean;
   case_sensitive?: boolean;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('blocked_content')
     .insert({
       ...blockedData,
@@ -172,7 +167,7 @@ export async function addBlockedContent(blockedData: {
 
 // Get user moderation history
 export async function getUserModerationHistory(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_moderation_history')
     .select('*')
     .eq('user_id', userId)
@@ -189,7 +184,7 @@ export async function recordUserViolation(
   violationType: string,
   notes?: string
 ) {
-  const { error } = await supabase.rpc('record_user_violation', {
+  const { error } = await getAdminClient().rpc('record_user_violation', {
     p_user_id: userId,
     p_violation_type: violationType,
     p_notes: notes,
@@ -201,7 +196,7 @@ export async function recordUserViolation(
 
 // Get moderation report
 export async function getModerationReport(date: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_reports')
     .select('*')
     .eq('report_date', date)
@@ -213,7 +208,7 @@ export async function getModerationReport(date: string) {
 
 // Generate moderation report
 export async function generateModerationReport(date: string) {
-  const { error } = await supabase.rpc('generate_moderation_report', {
+  const { error } = await getAdminClient().rpc('generate_moderation_report', {
     p_report_date: date,
   });
 
@@ -223,7 +218,7 @@ export async function generateModerationReport(date: string) {
 
 // Get moderation actions log
 export async function getModerationActionsLog(queueId?: string, limit: number = 100) {
-  let query = supabase
+  let query = getAdminClient()
     .from('moderation_actions_log')
     .select('*')
     .order('created_at', { ascending: false })
@@ -240,7 +235,7 @@ export async function getModerationActionsLog(queueId?: string, limit: number = 
 
 // Appeal moderation decision
 export async function appealModeration(queueId: string, userId: string, appealReason: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_queue')
     .update({
       appealed_by: userId,
@@ -256,7 +251,7 @@ export async function appealModeration(queueId: string, userId: string, appealRe
   if (error) throw error;
 
   // Log action
-  await supabase.from('moderation_actions_log').insert({
+  await getAdminClient().from('moderation_actions_log').insert({
     moderation_queue_id: queueId,
     action_type: 'appealed',
     actor_id: userId,
@@ -276,7 +271,7 @@ export async function reviewAppeal(
   approved: boolean,
   notes?: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('moderation_queue')
     .update({
       appeal_status: approved ? 'approved' : 'rejected',
@@ -292,7 +287,7 @@ export async function reviewAppeal(
   if (error) throw error;
 
   // Log action
-  await supabase.from('moderation_actions_log').insert({
+  await getAdminClient().from('moderation_actions_log').insert({
     moderation_queue_id: queueId,
     action_type: approved ? 'appeal_approved' : 'appeal_rejected',
     actor_id: reviewedBy,

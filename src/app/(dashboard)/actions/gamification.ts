@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get user XP
 export async function getUserXP(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_xp')
     .select('*')
     .eq('user_id', userId)
@@ -22,7 +17,7 @@ export async function getUserXP(userId: string) {
 
 // Add XP to user
 export async function addUserXP(userId: string, xpAmount: number, source: string, sourceId?: string) {
-  const { data, error } = await supabase.rpc('add_user_xp', {
+  const { data, error } = await getAdminClient().rpc('add_user_xp', {
     p_user_id: userId,
     p_xp_amount: xpAmount,
     p_source: source,
@@ -36,7 +31,7 @@ export async function addUserXP(userId: string, xpAmount: number, source: string
 
 // Get user badges
 export async function getUserBadges(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_badges')
     .select(`
       *,
@@ -52,7 +47,7 @@ export async function getUserBadges(userId: string) {
 
 // Get all available badges
 export async function getAllBadges() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('badges')
     .select('*')
     .eq('is_active', true)
@@ -64,7 +59,7 @@ export async function getAllBadges() {
 
 // Check badge eligibility
 export async function checkBadgeEligibility(userId: string) {
-  const { error } = await supabase.rpc('check_badge_eligibility', {
+  const { error } = await getAdminClient().rpc('check_badge_eligibility', {
     p_user_id: userId,
   });
 
@@ -74,7 +69,7 @@ export async function checkBadgeEligibility(userId: string) {
 
 // Update daily streak
 export async function updateDailyStreak(userId: string) {
-  const { error } = await supabase.rpc('update_daily_streak', {
+  const { error } = await getAdminClient().rpc('update_daily_streak', {
     p_user_id: userId,
   });
 
@@ -84,7 +79,7 @@ export async function updateDailyStreak(userId: string) {
 
 // Get leaderboard
 export async function getLeaderboard(leaderboardName: string, limit: number = 50) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('leaderboard_entries')
     .select(`
       *,
@@ -101,7 +96,7 @@ export async function getLeaderboard(leaderboardName: string, limit: number = 50
 
 // Refresh leaderboard
 export async function refreshLeaderboard(leaderboardId: string) {
-  const { error } = await supabase.rpc('refresh_leaderboard', {
+  const { error } = await getAdminClient().rpc('refresh_leaderboard', {
     p_leaderboard_id: leaderboardId,
   });
 
@@ -110,7 +105,7 @@ export async function refreshLeaderboard(leaderboardId: string) {
 
 // Get user achievements progress
 export async function getUserAchievements(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_achievement_progress')
     .select(`
       *,
@@ -125,7 +120,7 @@ export async function getUserAchievements(userId: string) {
 
 // Get available achievements
 export async function getAvailableAchievements() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('achievements')
     .select('*')
     .eq('is_active', true)
@@ -137,7 +132,7 @@ export async function getAvailableAchievements() {
 
 // Get user levels
 export async function getUserLevels() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_levels')
     .select('*')
     .order('level', { ascending: true });
@@ -148,7 +143,7 @@ export async function getUserLevels() {
 
 // Claim achievement reward
 export async function claimAchievementReward(progressId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('user_achievement_progress')
     .update({
       reward_claimed: true,

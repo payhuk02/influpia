@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Save a search
 export async function saveSearch(searchData: {
@@ -19,7 +14,7 @@ export async function saveSearch(searchData: {
   is_alert_enabled: boolean;
   alert_frequency?: 'instant' | 'daily' | 'weekly';
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('saved_searches')
     .insert({
       ...searchData,
@@ -37,7 +32,7 @@ export async function saveSearch(searchData: {
 
 // Get saved searches for a user
 export async function getSavedSearches(userId: string, searchType?: string) {
-  let query = supabase
+  let query = getAdminClient()
     .from('saved_searches')
     .select('*')
     .eq('user_id', userId)
@@ -54,7 +49,7 @@ export async function getSavedSearches(userId: string, searchType?: string) {
 
 // Delete a saved search
 export async function deleteSavedSearch(searchId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('saved_searches')
     .delete()
     .eq('id', searchId);
@@ -73,7 +68,7 @@ export async function logSearch(searchData: {
   search_duration_ms: number;
   zero_results: boolean;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('search_history')
     .insert({
       ...searchData,
@@ -88,7 +83,7 @@ export async function logSearch(searchData: {
 
 // Get search history for a user
 export async function getSearchHistory(userId: string, limit: number = 50) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('search_history')
     .select('*')
     .eq('user_id', userId)
@@ -101,7 +96,7 @@ export async function getSearchHistory(userId: string, limit: number = 50) {
 
 // Get AI recommendations
 export async function getAIRecommendations(userId: string, recommendationType: 'influencer' | 'campaign' | 'collaboration') {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('ai_recommendations')
     .select('*')
     .eq('user_id', userId)
@@ -116,7 +111,7 @@ export async function getAIRecommendations(userId: string, recommendationType: '
 
 // Dismiss an AI recommendation
 export async function dismissRecommendation(recommendationId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('ai_recommendations')
     .update({ is_dismissed: true })
     .eq('id', recommendationId);
@@ -126,7 +121,7 @@ export async function dismissRecommendation(recommendationId: string) {
 
 // Accept an AI recommendation
 export async function acceptRecommendation(recommendationId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('ai_recommendations')
     .update({ is_accepted: true, viewed_at: new Date().toISOString() })
     .eq('id', recommendationId);
@@ -136,7 +131,7 @@ export async function acceptRecommendation(recommendationId: string) {
 
 // Get search facets
 export async function getSearchFacets() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('search_facets')
     .select('*')
     .eq('is_active', true)
@@ -148,7 +143,7 @@ export async function getSearchFacets() {
 
 // Get search analytics
 export async function getSearchAnalytics(date: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('search_analytics')
     .select('*')
     .eq('search_date', date);
@@ -159,7 +154,7 @@ export async function getSearchAnalytics(date: string) {
 
 // Generate campaign recommendations (AI matching)
 export async function generateCampaignRecommendations(campaignId: string) {
-  const { data, error } = await supabase.rpc('generate_campaign_recommendations', {
+  const { data, error } = await getAdminClient().rpc('generate_campaign_recommendations', {
     p_campaign_id: campaignId,
   });
 
@@ -169,7 +164,7 @@ export async function generateCampaignRecommendations(campaignId: string) {
 
 // Update facet counts
 export async function updateFacetCounts(searchType: string, filters: Record<string, any>) {
-  const { data, error } = await supabase.rpc('update_facet_counts', {
+  const { data, error } = await getAdminClient().rpc('update_facet_counts', {
     p_search_type: searchType,
     p_filters: filters,
   });

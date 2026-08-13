@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Generate API key
 export async function generateAPIKey(userId: string, keyData: {
@@ -17,7 +12,7 @@ export async function generateAPIKey(userId: string, keyData: {
   rate_limit_per_hour?: number;
   rate_limit_per_day?: number;
 }) {
-  const { data, error } = await supabase.rpc('generate_api_key', {
+  const { data, error } = await getAdminClient().rpc('generate_api_key', {
     p_user_id: userId,
     p_key_name: keyData.key_name,
     p_key_type: keyData.key_type,
@@ -34,7 +29,7 @@ export async function generateAPIKey(userId: string, keyData: {
 
 // Get API keys for user
 export async function getAPIKeys(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('api_keys')
     .select('*')
     .eq('user_id', userId)
@@ -46,7 +41,7 @@ export async function getAPIKeys(userId: string) {
 
 // Delete API key
 export async function deleteAPIKey(keyId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('api_keys')
     .update({ is_active: false })
     .eq('id', keyId);
@@ -57,7 +52,7 @@ export async function deleteAPIKey(keyId: string) {
 
 // Verify API key
 export async function verifyAPIKey(keyHash: string) {
-  const { data, error } = await supabase.rpc('verify_api_key', {
+  const { data, error } = await getAdminClient().rpc('verify_api_key', {
     p_key_hash: keyHash,
   });
 
@@ -67,7 +62,7 @@ export async function verifyAPIKey(keyHash: string) {
 
 // Check API rate limit
 export async function checkAPIRateLimit(keyId: string, windowType: 'minute' | 'hour' | 'day') {
-  const { data, error } = await supabase.rpc('check_api_rate_limit', {
+  const { data, error } = await getAdminClient().rpc('check_api_rate_limit', {
     p_api_key_id: keyId,
     p_window_type: windowType,
   });
@@ -91,7 +86,7 @@ export async function logAPIUsage(usageData: {
   rate_limited: boolean;
   error_message?: string;
 }) {
-  const { error } = await supabase.rpc('log_api_usage', {
+  const { error } = await getAdminClient().rpc('log_api_usage', {
     p_api_key_id: usageData.api_key_id,
     p_user_id: usageData.user_id,
     p_endpoint: usageData.endpoint,
@@ -111,7 +106,7 @@ export async function logAPIUsage(usageData: {
 
 // Get API usage logs
 export async function getAPIUsageLogs(userId: string, limit: number = 100) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('api_usage_logs')
     .select('*')
     .eq('user_id', userId)
@@ -124,7 +119,7 @@ export async function getAPIUsageLogs(userId: string, limit: number = 100) {
 
 // Get API usage stats
 export async function getAPIUsageStats(keyId: string) {
-  const { data, error } = await supabase.rpc('get_api_usage_stats', {
+  const { data, error } = await getAdminClient().rpc('get_api_usage_stats', {
     p_api_key_id: keyId,
   });
 
@@ -141,7 +136,7 @@ export async function createWebhook(userId: string, webhookData: {
   retry_count?: number;
   timeout_seconds?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('api_webhooks')
     .insert({
       user_id: userId,
@@ -162,7 +157,7 @@ export async function createWebhook(userId: string, webhookData: {
 
 // Get webhooks for user
 export async function getWebhooks(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('api_webhooks')
     .select('*')
     .eq('user_id', userId)
@@ -174,7 +169,7 @@ export async function getWebhooks(userId: string) {
 
 // Delete webhook
 export async function deleteWebhook(webhookId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('api_webhooks')
     .delete()
     .eq('id', webhookId);
@@ -185,7 +180,7 @@ export async function deleteWebhook(webhookId: string) {
 
 // Get webhook delivery logs
 export async function getWebhookDeliveryLogs(webhookId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('webhook_delivery_logs')
     .select('*')
     .eq('webhook_id', webhookId)
@@ -198,7 +193,7 @@ export async function getWebhookDeliveryLogs(webhookId: string) {
 
 // Trigger webhook
 export async function triggerAPIWebhook(webhookId: string, eventType: string, payload: Record<string, any>) {
-  const { error } = await supabase.rpc('trigger_api_webhook', {
+  const { error } = await getAdminClient().rpc('trigger_api_webhook', {
     p_webhook_id: webhookId,
     p_event_type: eventType,
     p_payload: payload,
@@ -209,7 +204,7 @@ export async function triggerAPIWebhook(webhookId: string, eventType: string, pa
 
 // Get API endpoints
 export async function getAPIEndpoints() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('api_endpoints')
     .select('*')
     .eq('is_deprecated', false)

@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get brand safety categories
 export async function getBrandSafetyCategories() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('brand_safety_categories')
     .select('*')
     .eq('is_active', true)
@@ -22,7 +17,7 @@ export async function getBrandSafetyCategories() {
 
 // Get influencer vetting
 export async function getInfluencerVetting(influencerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('influencer_vetting')
     .select(`
       *,
@@ -44,7 +39,7 @@ export async function createInfluencerVetting(vettingData: {
   requested_by: string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('influencer_vetting')
     .insert({
       ...vettingData,
@@ -62,7 +57,7 @@ export async function createInfluencerVetting(vettingData: {
 
 // Run brand safety check
 export async function runBrandSafetyCheck(influencerId: string, checkType: 'full' | 'quick' = 'full') {
-  const { data, error } = await supabase.rpc('run_brand_safety_check', {
+  const { data, error } = await getAdminClient().rpc('run_brand_safety_check', {
     p_influencer_id: influencerId,
     p_check_type: checkType,
   });
@@ -74,7 +69,7 @@ export async function runBrandSafetyCheck(influencerId: string, checkType: 'full
 
 // Get vetting criteria
 export async function getVettingCriteria(categoryId?: string) {
-  let query = supabase
+  let query = getAdminClient()
     .from('vetting_criteria')
     .select('*')
     .eq('is_active', true)
@@ -91,7 +86,7 @@ export async function getVettingCriteria(categoryId?: string) {
 
 // Get vetting results
 export async function getVettingResults(vettingId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('vetting_results')
     .select('*')
     .eq('vetting_id', vettingId)
@@ -103,7 +98,7 @@ export async function getVettingResults(vettingId: string) {
 
 // Get brand safety matches
 export async function getBrandSafetyMatches(campaignId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('brand_safety_matches')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -115,7 +110,7 @@ export async function getBrandSafetyMatches(campaignId: string) {
 
 // Get verification documents
 export async function getVerificationDocuments(influencerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('verification_documents')
     .select('*')
     .eq('influencer_id', influencerId)
@@ -133,7 +128,7 @@ export async function uploadVerificationDocument(documentData: {
   expiry_date?: string;
   uploaded_by: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('verification_documents')
     .insert({
       ...documentData,
@@ -150,7 +145,7 @@ export async function uploadVerificationDocument(documentData: {
 
 // Verify document
 export async function verifyDocument(documentId: string, verifiedBy: string, status: 'approved' | 'rejected', notes?: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('verification_documents')
     .update({
       verification_status: status,
@@ -169,7 +164,7 @@ export async function verifyDocument(documentId: string, verifiedBy: string, sta
 
 // Get brand safety preferences
 export async function getBrandSafetyPreferences(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('brand_safety_preferences')
     .select('*')
     .eq('user_id', userId)
@@ -188,7 +183,7 @@ export async function updateBrandSafetyPreferences(userId: string, preferences: 
   require_verification?: boolean;
   require_kyc?: boolean;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('brand_safety_preferences')
     .upsert({
       user_id: userId,
@@ -205,7 +200,7 @@ export async function updateBrandSafetyPreferences(userId: string, preferences: 
 
 // Get vetting history
 export async function getVettingHistory(influencerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('vetting_history')
     .select('*')
     .eq('influencer_id', influencerId)
@@ -217,7 +212,7 @@ export async function getVettingHistory(influencerId: string) {
 
 // Calculate brand safety score
 export async function calculateBrandSafetyScore(influencerId: string) {
-  const { data, error } = await supabase.rpc('calculate_brand_safety_score', {
+  const { data, error } = await getAdminClient().rpc('calculate_brand_safety_score', {
     p_influencer_id: influencerId,
   });
 

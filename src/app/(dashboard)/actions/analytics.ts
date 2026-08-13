@@ -1,12 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get campaign metrics for a date range
 export async function getCampaignMetrics(
@@ -14,7 +9,7 @@ export async function getCampaignMetrics(
   startDate: string,
   endDate: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('campaign_metrics')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -32,7 +27,7 @@ export async function getInfluencerMetrics(
   startDate: string,
   endDate: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('influencer_metrics')
     .select('*')
     .eq('influencer_id', influencerId)
@@ -46,7 +41,7 @@ export async function getInfluencerMetrics(
 
 // Get ROI tracking data
 export async function getROITracking(campaignId?: string) {
-  let query = supabase.from('roi_tracking').select('*');
+  let query = getAdminClient().from('roi_tracking').select('*');
   
   if (campaignId) {
     query = query.eq('campaign_id', campaignId);
@@ -63,7 +58,7 @@ export async function getCohortAnalysis(
   cohortType: 'user' | 'influencer' | 'brand',
   cohortId: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('cohort_analysis')
     .select('*')
     .eq('cohort_type', cohortType)
@@ -76,7 +71,7 @@ export async function getCohortAnalysis(
 
 // Get funnel metrics
 export async function getFunnelMetrics(funnelName: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('funnel_events')
     .select('*')
     .eq('funnel_name', funnelName)
@@ -96,7 +91,7 @@ export async function trackAnalyticsEvent(eventData: {
   utm_medium?: string;
   utm_campaign?: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('analytics_events')
     .insert({
       ...eventData,
@@ -113,7 +108,7 @@ export async function trackAnalyticsEvent(eventData: {
 export async function getDashboardAnalytics(userId: string, role: 'brand' | 'influencer') {
   if (role === 'brand') {
     // Get brand-specific analytics
-    const { data: campaigns, error: campaignsError } = await supabase
+    const { data: campaigns, error: campaignsError } = await getAdminClient()
       .from('campaigns')
       .select('id, title, budget, created_at')
       .eq('brand_id', userId)
@@ -124,7 +119,7 @@ export async function getDashboardAnalytics(userId: string, role: 'brand' | 'inf
 
     const campaignIds = campaigns?.map(c => c.id) || [];
     
-    const { data: metrics, error: metricsError } = await supabase
+    const { data: metrics, error: metricsError } = await getAdminClient()
       .from('campaign_metrics')
       .select('*')
       .in('campaign_id', campaignIds)
@@ -136,7 +131,7 @@ export async function getDashboardAnalytics(userId: string, role: 'brand' | 'inf
     return { campaigns, metrics };
   } else {
     // Get influencer-specific analytics
-    const { data: metrics, error: metricsError } = await supabase
+    const { data: metrics, error: metricsError } = await getAdminClient()
       .from('influencer_metrics')
       .select('*')
       .eq('influencer_id', userId)
@@ -151,7 +146,7 @@ export async function getDashboardAnalytics(userId: string, role: 'brand' | 'inf
 
 // Calculate ROI for a campaign
 export async function calculateCampaignROI(campaignId: string) {
-  const { data, error } = await supabase.rpc('calculate_roi', {
+  const { data, error } = await getAdminClient().rpc('calculate_roi', {
     p_campaign_id: campaignId,
   });
 
@@ -161,7 +156,7 @@ export async function calculateCampaignROI(campaignId: string) {
 
 // Aggregate campaign metrics
 export async function aggregateCampaignMetrics(campaignId: string) {
-  const { data, error } = await supabase.rpc('aggregate_campaign_metrics', {
+  const { data, error } = await getAdminClient().rpc('aggregate_campaign_metrics', {
     p_campaign_id: campaignId,
   });
 

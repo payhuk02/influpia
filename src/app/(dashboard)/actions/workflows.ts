@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get workflow templates
 export async function getWorkflowTemplates() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_templates')
     .select('*')
     .eq('is_active', true)
@@ -22,7 +17,7 @@ export async function getWorkflowTemplates() {
 
 // Create workflow definition from template
 export async function createWorkflowFromTemplate(templateId: string, userId: string, workflowName: string) {
-  const { data, error } = await supabase.rpc('create_workflow_from_template', {
+  const { data, error } = await getAdminClient().rpc('create_workflow_from_template', {
     p_template_id: templateId,
     p_user_id: userId,
     p_workflow_name: workflowName,
@@ -35,7 +30,7 @@ export async function createWorkflowFromTemplate(templateId: string, userId: str
 
 // Get workflow definitions for user
 export async function getWorkflowDefinitions(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_definitions')
     .select('*')
     .eq('created_by', userId)
@@ -47,7 +42,7 @@ export async function getWorkflowDefinitions(userId: string) {
 
 // Get workflow by ID
 export async function getWorkflowById(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_definitions')
     .select('*')
     .eq('id', workflowId)
@@ -59,7 +54,7 @@ export async function getWorkflowById(workflowId: string) {
 
 // Get workflow steps
 export async function getWorkflowSteps(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_steps')
     .select('*')
     .eq('workflow_id', workflowId)
@@ -77,7 +72,7 @@ export async function createWorkflowStep(stepData: {
   step_config: Record<string, any>;
   step_order: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_steps')
     .insert({
       ...stepData,
@@ -94,7 +89,7 @@ export async function createWorkflowStep(stepData: {
 
 // Update workflow step
 export async function updateWorkflowStep(stepId: string, stepData: Record<string, any>) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_steps')
     .update({
       ...stepData,
@@ -111,7 +106,7 @@ export async function updateWorkflowStep(stepId: string, stepData: Record<string
 
 // Delete workflow step
 export async function deleteWorkflowStep(stepId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('workflow_steps')
     .delete()
     .eq('id', stepId);
@@ -122,7 +117,7 @@ export async function deleteWorkflowStep(stepId: string) {
 
 // Trigger workflow
 export async function triggerWorkflow(workflowId: string, triggerData: Record<string, any>) {
-  const { data, error } = await supabase.rpc('trigger_workflow', {
+  const { data, error } = await getAdminClient().rpc('trigger_workflow', {
     p_workflow_id: workflowId,
     p_trigger_data: triggerData,
   });
@@ -134,7 +129,7 @@ export async function triggerWorkflow(workflowId: string, triggerData: Record<st
 
 // Get workflow instances
 export async function getWorkflowInstances(workflowId: string, status?: string) {
-  let query = supabase
+  let query = getAdminClient()
     .from('workflow_instances')
     .select('*')
     .eq('workflow_id', workflowId)
@@ -151,7 +146,7 @@ export async function getWorkflowInstances(workflowId: string, status?: string) 
 
 // Get workflow execution logs
 export async function getWorkflowExecutionLogs(instanceId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_execution_logs')
     .select('*')
     .eq('instance_id', instanceId)
@@ -163,7 +158,7 @@ export async function getWorkflowExecutionLogs(instanceId: string) {
 
 // Get workflow triggers
 export async function getWorkflowTriggers(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_triggers')
     .select('*')
     .eq('workflow_id', workflowId)
@@ -179,7 +174,7 @@ export async function createWorkflowTrigger(triggerData: {
   trigger_type: 'manual' | 'schedule' | 'event' | 'webhook' | 'condition';
   trigger_config: Record<string, any>;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_triggers')
     .insert({
       ...triggerData,
@@ -196,7 +191,7 @@ export async function createWorkflowTrigger(triggerData: {
 
 // Get workflow actions
 export async function getWorkflowActions(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_actions')
     .select('*')
     .eq('workflow_id', workflowId)
@@ -208,7 +203,7 @@ export async function getWorkflowActions(workflowId: string) {
 
 // Execute workflow action
 export async function executeWorkflowAction(actionId: string, actionData: Record<string, any>) {
-  const { data, error } = await supabase.rpc('execute_workflow_action', {
+  const { data, error } = await getAdminClient().rpc('execute_workflow_action', {
     p_action_id: actionId,
     p_action_data: actionData,
   });
@@ -220,7 +215,7 @@ export async function executeWorkflowAction(actionId: string, actionData: Record
 
 // Activate workflow
 export async function activateWorkflow(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_definitions')
     .update({
       is_active: true,
@@ -237,7 +232,7 @@ export async function activateWorkflow(workflowId: string) {
 
 // Deactivate workflow
 export async function deactivateWorkflow(workflowId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('workflow_definitions')
     .update({
       is_active: false,
@@ -254,7 +249,7 @@ export async function deactivateWorkflow(workflowId: string) {
 
 // Delete workflow
 export async function deleteWorkflow(workflowId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('workflow_definitions')
     .delete()
     .eq('id', workflowId);
@@ -265,7 +260,7 @@ export async function deleteWorkflow(workflowId: string) {
 
 // Get workflow summary
 export async function getWorkflowSummary(workflowId: string) {
-  const { data, error } = await supabase.rpc('get_workflow_summary', {
+  const { data, error } = await getAdminClient().rpc('get_workflow_summary', {
     p_workflow_id: workflowId,
   });
 

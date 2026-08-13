@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Generate affiliate code
 export async function generateAffiliateCode(userId: string) {
-  const { data, error } = await supabase.rpc('generate_affiliate_code', {
+  const { data, error } = await getAdminClient().rpc('generate_affiliate_code', {
     p_user_id: userId,
   });
 
@@ -20,7 +15,7 @@ export async function generateAffiliateCode(userId: string) {
 
 // Get affiliate info for user
 export async function getAffiliateInfo(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliates')
     .select(`
       *,
@@ -38,7 +33,7 @@ export async function getAffiliateInfo(userId: string) {
 export async function createAffiliateApplication(userId: string, programId: string) {
   const affiliateCode = await generateAffiliateCode(userId);
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliates')
     .insert({
       user_id: userId,
@@ -59,7 +54,7 @@ export async function createAffiliateApplication(userId: string, programId: stri
 
 // Get referral clicks
 export async function getReferralClicks(affiliateId: string, limit: number = 50) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('referral_clicks')
     .select('*')
     .eq('affiliate_id', affiliateId)
@@ -72,7 +67,7 @@ export async function getReferralClicks(affiliateId: string, limit: number = 50)
 
 // Get commissions
 export async function getCommissions(affiliateId: string, status?: string) {
-  let query = supabase
+  let query = getAdminClient()
     .from('commissions')
     .select('*')
     .eq('affiliate_id', affiliateId)
@@ -89,7 +84,7 @@ export async function getCommissions(affiliateId: string, status?: string) {
 
 // Calculate commission
 export async function calculateCommission(affiliateId: string, baseAmountCents: number, commissionType: string) {
-  const { data, error } = await supabase.rpc('calculate_commission', {
+  const { data, error } = await getAdminClient().rpc('calculate_commission', {
     p_affiliate_id: affiliateId,
     p_base_amount_cents: baseAmountCents,
     p_commission_type: commissionType,
@@ -107,7 +102,7 @@ export async function createCommission(
   baseAmountCents: number,
   metadata: Record<string, any> = {}
 ) {
-  const { data, error } = await supabase.rpc('create_commission', {
+  const { data, error } = await getAdminClient().rpc('create_commission', {
     p_affiliate_id: affiliateId,
     p_referred_user_id: referredUserId,
     p_commission_type: commissionType,
@@ -122,7 +117,7 @@ export async function createCommission(
 
 // Check affiliate tier upgrade
 export async function checkAffiliateTierUpgrade(affiliateId: string) {
-  const { error } = await supabase.rpc('check_affiliate_tier_upgrade', {
+  const { error } = await getAdminClient().rpc('check_affiliate_tier_upgrade', {
     p_affiliate_id: affiliateId,
   });
 
@@ -132,7 +127,7 @@ export async function checkAffiliateTierUpgrade(affiliateId: string) {
 
 // Get affiliate payouts
 export async function getAffiliatePayouts(affiliateId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliate_payouts')
     .select('*')
     .eq('affiliate_id', affiliateId)
@@ -144,7 +139,7 @@ export async function getAffiliatePayouts(affiliateId: string) {
 
 // Request payout
 export async function requestPayout(affiliateId: string) {
-  const affiliate = await supabase
+  const affiliate = await getAdminClient()
     .from('affiliates')
     .select('current_balance_cents')
     .eq('id', affiliateId)
@@ -156,7 +151,7 @@ export async function requestPayout(affiliateId: string) {
   const periodStart = new Date(now);
   periodStart.setDate(periodStart.getDate() - 30);
 
-  const { data, error } = await supabase.rpc('process_affiliate_payout', {
+  const { data, error } = await getAdminClient().rpc('process_affiliate_payout', {
     p_affiliate_id: affiliateId,
     p_period_start: periodStart.toISOString().split('T')[0],
     p_period_end: now.toISOString().split('T')[0],
@@ -172,7 +167,7 @@ export async function getAffiliateMetrics(affiliateId: string, days: number = 30
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliate_metrics')
     .select('*')
     .eq('affiliate_id', affiliateId)
@@ -185,7 +180,7 @@ export async function getAffiliateMetrics(affiliateId: string, days: number = 30
 
 // Get tier rules
 export async function getTierRules(programId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliate_tier_rules')
     .select('*')
     .eq('program_id', programId)
@@ -198,7 +193,7 @@ export async function getTierRules(programId: string) {
 
 // Get affiliate programs
 export async function getAffiliatePrograms() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('affiliate_programs')
     .select('*')
     .eq('is_active', true);

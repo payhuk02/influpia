@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get contract templates
 export async function getContractTemplates() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contract_templates')
     .select('*')
     .eq('is_active', true)
@@ -23,7 +18,7 @@ export async function getContractTemplates() {
 
 // Generate contract from template
 export async function generateContractFromTemplate(templateId: string, variables: Record<string, any>) {
-  const { data, error } = await supabase.rpc('generate_contract_from_template', {
+  const { data, error } = await getAdminClient().rpc('generate_contract_from_template', {
     p_template_id: templateId,
     p_variables: variables,
   });
@@ -37,7 +32,7 @@ export async function generateContractFromTemplate(templateId: string, variables
 export async function getUserContracts(userId: string, role: 'brand' | 'influencer') {
   const column = role === 'brand' ? 'brand_id' : 'influencer_id';
   
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contracts')
     .select(`
       *,
@@ -53,7 +48,7 @@ export async function getUserContracts(userId: string, role: 'brand' | 'influenc
 
 // Get contract by ID
 export async function getContractById(contractId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contracts')
     .select(`
       *,
@@ -74,7 +69,7 @@ export async function signContract(contractId: string, userId: string, role: 'br
   const column = role === 'brand' ? 'brand_signed_at' : 'influencer_signed_at';
   const signatureColumn = role === 'brand' ? 'brand_signature_id' : 'influencer_signature_id';
   
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contracts')
     .update({
       [column]: new Date().toISOString(),
@@ -93,7 +88,7 @@ export async function signContract(contractId: string, userId: string, role: 'br
 
 // Get milestones for a contract
 export async function getContractMilestones(contractId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('milestones')
     .select('*')
     .eq('contract_id', contractId)
@@ -105,7 +100,7 @@ export async function getContractMilestones(contractId: string) {
 
 // Create default milestones for a contract
 export async function createDefaultMilestones(contractId: string) {
-  const { data, error } = await supabase.rpc('create_default_milestones', {
+  const { data, error } = await getAdminClient().rpc('create_default_milestones', {
     p_contract_id: contractId,
   });
 
@@ -135,7 +130,7 @@ export async function updateMilestoneStatus(
     updateData.rejection_reason = rejectionReason;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('milestones')
     .update(updateData)
     .eq('id', milestoneId)
@@ -149,7 +144,7 @@ export async function updateMilestoneStatus(
 
 // Get contract amendments
 export async function getContractAmendments(contractId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contract_amendments')
     .select('*')
     .eq('contract_id', contractId)
@@ -167,7 +162,7 @@ export async function requestAmendment(
   changes: Record<string, any>,
   requestedBy: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contract_amendments')
     .insert({
       contract_id: contractId,
@@ -188,7 +183,7 @@ export async function requestAmendment(
 
 // Approve amendment
 export async function approveAmendment(amendmentId: string, approvedBy: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contract_amendments')
     .update({
       status: 'approved',
@@ -208,7 +203,7 @@ export async function approveAmendment(amendmentId: string, approvedBy: string) 
 
 // Get contract notifications
 export async function getContractNotifications(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('contract_notifications')
     .select('*')
     .eq('recipient_id', userId)
@@ -221,7 +216,7 @@ export async function getContractNotifications(userId: string) {
 
 // Mark notification as read
 export async function markNotificationAsRead(notificationId: string) {
-  const { error } = await supabase
+  const { error } = await getAdminClient()
     .from('contract_notifications')
     .update({
       is_read: true,

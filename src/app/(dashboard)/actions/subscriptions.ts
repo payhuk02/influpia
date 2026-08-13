@@ -1,16 +1,11 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // Get subscription plans
 export async function getSubscriptionPlans() {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('subscription_plans')
     .select('*')
     .eq('is_active', true)
@@ -22,7 +17,7 @@ export async function getSubscriptionPlans() {
 
 // Get user subscription
 export async function getUserSubscription(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_subscriptions')
     .select(`
       *,
@@ -39,7 +34,7 @@ export async function getUserSubscription(userId: string) {
 
 // Check if user has feature access
 export async function hasFeatureAccess(userId: string, featureKey: string) {
-  const { data, error } = await supabase.rpc('has_feature_access', {
+  const { data, error } = await getAdminClient().rpc('has_feature_access', {
     p_user_id: userId,
     p_feature_key: featureKey,
   });
@@ -50,7 +45,7 @@ export async function hasFeatureAccess(userId: string, featureKey: string) {
 
 // Check usage limit
 export async function checkUsageLimit(userId: string, metricType: string) {
-  const { data, error } = await supabase.rpc('check_usage_limit', {
+  const { data, error } = await getAdminClient().rpc('check_usage_limit', {
     p_user_id: userId,
     p_metric_type: metricType,
   });
@@ -61,7 +56,7 @@ export async function checkUsageLimit(userId: string, metricType: string) {
 
 // Record usage
 export async function recordUsage(userId: string, metricType: string, amount: number = 1) {
-  const { error } = await supabase.rpc('record_usage', {
+  const { error } = await getAdminClient().rpc('record_usage', {
     p_user_id: userId,
     p_metric_type: metricType,
     p_amount: amount,
@@ -73,7 +68,7 @@ export async function recordUsage(userId: string, metricType: string, amount: nu
 
 // Get usage tracking for user
 export async function getUserUsage(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('usage_tracking')
     .select('*')
     .eq('user_id', userId)
@@ -89,7 +84,7 @@ export async function createSubscription(
   planId: string,
   provider: 'stripe' | 'fedapay' | 'manual'
 ) {
-  const plan = await supabase
+  const plan = await getAdminClient()
     .from('subscription_plans')
     .select('*')
     .eq('id', planId)
@@ -101,7 +96,7 @@ export async function createSubscription(
   const periodEnd = new Date(now);
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_subscriptions')
     .insert({
       user_id: userId,
@@ -124,7 +119,7 @@ export async function createSubscription(
 
 // Upgrade/downgrade subscription
 export async function changeSubscriptionPlan(userId: string, newPlanId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_subscriptions')
     .update({
       plan_id: newPlanId,
@@ -137,7 +132,7 @@ export async function changeSubscriptionPlan(userId: string, newPlanId: string) 
   if (error) throw error;
   
   // Log history
-  await supabase.from('subscription_history').insert({
+  await getAdminClient().from('subscription_history').insert({
     user_id: userId,
     subscription_id: data.id,
     action: 'upgraded',
@@ -151,7 +146,7 @@ export async function changeSubscriptionPlan(userId: string, newPlanId: string) 
 
 // Cancel subscription
 export async function cancelSubscription(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('user_subscriptions')
     .update({
       cancel_at_period_end: true,
@@ -165,7 +160,7 @@ export async function cancelSubscription(userId: string) {
   if (error) throw error;
   
   // Log history
-  await supabase.from('subscription_history').insert({
+  await getAdminClient().from('subscription_history').insert({
     user_id: userId,
     subscription_id: data.id,
     action: 'cancelled',
@@ -178,7 +173,7 @@ export async function cancelSubscription(userId: string) {
 
 // Get subscription history
 export async function getSubscriptionHistory(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('subscription_history')
     .select(`
       *,
@@ -203,7 +198,7 @@ export async function purchaseAddOn(
   const validUntil = new Date(now);
   validUntil.setMonth(validUntil.getMonth() + 1);
 
-  const { data, error } = await supabase
+  const { data, error } = await getAdminClient()
     .from('add_on_purchases')
     .insert({
       user_id: userId,
@@ -225,6 +220,6 @@ export async function purchaseAddOn(
 
 // Check subscription expiry
 export async function checkSubscriptionExpiry() {
-  const { error } = await supabase.rpc('check_subscription_expiry');
+  const { error } = await getAdminClient().rpc('check_subscription_expiry');
   if (error) throw error;
 }
