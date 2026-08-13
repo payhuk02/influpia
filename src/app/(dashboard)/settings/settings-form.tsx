@@ -4,13 +4,25 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateBrandProfile, updateInfluencerProfile } from "./actions";
-import { Loader2, ShieldCheck, Building2, UserCircle, CreditCard } from "lucide-react";
+import { Loader2, ShieldCheck, Building2, UserCircle, CreditCard, Globe, Clock, Calendar } from "lucide-react";
+import { languages, currencies, timezones, dateFormats, timeFormats, firstDaysOfWeek } from "@/lib/i18n";
 
 export function SettingsForm({ user, profile, data }: { user: any, profile: any, data: any }) {
   const [activeTab, setActiveTab] = useState("public");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  const [regionalSettings, setRegionalSettings] = useState({
+    language: 'fr',
+    currency: 'XOF',
+    timezone: 'Africa/Abidjan',
+    dateFormat: 'DD/MM/YYYY',
+    timeFormat: '12h',
+    firstDayOfWeek: 1,
+  });
 
   const isBrand = profile.role === "brand";
 
@@ -60,6 +72,13 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
           className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${activeTab === 'security' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-white/60 hover:bg-white/5 hover:text-white border border-transparent'}`}
         >
           <ShieldCheck className="w-5 h-5" /> Sécurité du Compte
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveTab("regional")}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${activeTab === 'regional' ? 'bg-primary/20 text-primary border border-primary/30' : 'text-white/60 hover:bg-white/5 hover:text-white border border-transparent'}`}
+        >
+          <Globe className="w-5 h-5" /> Langue & Région
         </button>
       </div>
 
@@ -166,6 +185,117 @@ export function SettingsForm({ user, profile, data }: { user: any, profile: any,
                 <CardContent>
                   <p className="text-sm text-white/60 mb-4">La suppression de votre compte est définitive. Toutes vos données seront effacées.</p>
                   <Button type="button" variant="destructive">Supprimer le compte</Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "regional" && (
+            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <Card className="bg-white/[0.02] border-white/10">
+                <CardHeader>
+                  <CardTitle>Langue & Région</CardTitle>
+                  <CardDescription>Personnalisez vos préférences linguistiques et régionales</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      Langue
+                    </Label>
+                    <Select value={regionalSettings.language} onValueChange={(value) => setRegionalSettings({...regionalSettings, language: value})}>
+                      <SelectTrigger className="bg-white/5 border-white/10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/90 border-white/10">
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            {lang.flag} {lang.nativeName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Fuseau horaire
+                    </Label>
+                    <Select value={regionalSettings.timezone} onValueChange={(value) => setRegionalSettings({...regionalSettings, timezone: value})}>
+                      <SelectTrigger className="bg-white/5 border-white/10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/90 border-white/10">
+                        {timezones.map((tz) => (
+                          <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Devise</Label>
+                    <Select value={regionalSettings.currency} onValueChange={(value) => setRegionalSettings({...regionalSettings, currency: value})}>
+                      <SelectTrigger className="bg-white/5 border-white/10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/90 border-white/10">
+                        {currencies.map((curr) => (
+                          <SelectItem key={curr.code} value={curr.code}>
+                            {curr.symbol} {curr.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        Format de date
+                      </Label>
+                      <Select value={regionalSettings.dateFormat} onValueChange={(value) => setRegionalSettings({...regionalSettings, dateFormat: value})}>
+                        <SelectTrigger className="bg-white/5 border-white/10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black/90 border-white/10">
+                          {dateFormats.map((df) => (
+                            <SelectItem key={df.value} value={df.value}>{df.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Format d'heure</Label>
+                      <Select value={regionalSettings.timeFormat} onValueChange={(value) => setRegionalSettings({...regionalSettings, timeFormat: value as '12h' | '24h'})}>
+                        <SelectTrigger className="bg-white/5 border-white/10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black/90 border-white/10">
+                          {timeFormats.map((tf) => (
+                            <SelectItem key={tf.value} value={tf.value}>{tf.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Premier jour de la semaine</Label>
+                    <Select value={regionalSettings.firstDayOfWeek.toString()} onValueChange={(value) => setRegionalSettings({...regionalSettings, firstDayOfWeek: parseInt(value)})}>
+                      <SelectTrigger className="bg-white/5 border-white/10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/90 border-white/10">
+                        {firstDaysOfWeek.map((fd) => (
+                          <SelectItem key={fd.value} value={fd.value.toString()}>{fd.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardContent>
               </Card>
             </div>
