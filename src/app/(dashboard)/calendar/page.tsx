@@ -41,7 +41,7 @@ export default async function CalendarPage() {
           <TabsTrigger value="scheduled">Programmé</TabsTrigger>
           <TabsTrigger value="templates">Modèles</TabsTrigger>
           <TabsTrigger value="rules">Règles</TabsTrigger>
-        </TabsContent>
+        </TabsList>
 
         <TabsContent value="calendar" className="space-y-6">
           <Card className="bg-black/40 border-white/10">
@@ -57,7 +57,7 @@ export default async function CalendarPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsList>
 
         <TabsContent value="scheduled" className="space-y-6">
           <Card className="bg-black/40 border-white/10">
@@ -122,7 +122,7 @@ export default async function CalendarPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsList>
 
         <TabsContent value="templates" className="space-y-6">
           <Card className="bg-black/40 border-white/10">
@@ -174,7 +174,7 @@ export default async function CalendarPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsList>
 
         <TabsContent value="rules" className="space-y-6">
           <Card className="bg-black/40 border-white/10">
@@ -219,8 +219,9 @@ export default async function CalendarPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsList>
       </Tabs>
     </div>
   );
 }
+
