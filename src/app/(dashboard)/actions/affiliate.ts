@@ -1,6 +1,7 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Generate affiliate code
@@ -14,19 +15,20 @@ export async function generateAffiliateCode(userId: string) {
 }
 
 // Get affiliate info for user
-export async function getAffiliateInfo(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('affiliates')
-    .select(`
-      *,
-      program:affiliate_programs(*),
-      tier_rule:affiliate_tier_rules(*)
-    `)
-    .eq('user_id', userId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
+export async function getAffiliateInfo(userId: string): Promise<any | null> {
+  return readOne(
+    'getAffiliateInfo',
+    (supabase) =>
+      supabase
+        .from('affiliates')
+        .select(`
+          *,
+          program:affiliate_programs(*)
+        `)
+        .eq('user_id', userId)
+        .single(),
+    { notFoundOk: true }
+  );
 }
 
 // Create affiliate application
@@ -67,19 +69,16 @@ export async function getReferralClicks(affiliateId: string, limit: number = 50)
 
 // Get commissions
 export async function getCommissions(affiliateId: string, status?: string) {
-  let query = getAdminClient()
-    .from('commissions')
-    .select('*')
-    .eq('affiliate_id', affiliateId)
-    .order('created_at', { ascending: false });
+  return readList('getCommissions', async (supabase) => {
+    let query = supabase
+      .from('commissions')
+      .select('*')
+      .eq('affiliate_id', affiliateId)
+      .order('created_at', { ascending: false });
 
-  if (status) {
-    query = query.eq('status', status);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
+    if (status) query = query.eq('status', status);
+    return query;
+  });
 }
 
 // Calculate commission
@@ -127,14 +126,13 @@ export async function checkAffiliateTierUpgrade(affiliateId: string) {
 
 // Get affiliate payouts
 export async function getAffiliatePayouts(affiliateId: string) {
-  const { data, error } = await getAdminClient()
-    .from('affiliate_payouts')
-    .select('*')
-    .eq('affiliate_id', affiliateId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getAffiliatePayouts', (supabase) =>
+    supabase
+      .from('affiliate_payouts')
+      .select('*')
+      .eq('affiliate_id', affiliateId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Request payout
@@ -167,28 +165,27 @@ export async function getAffiliateMetrics(affiliateId: string, days: number = 30
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
-  const { data, error } = await getAdminClient()
-    .from('affiliate_metrics')
-    .select('*')
-    .eq('affiliate_id', affiliateId)
-    .gte('metric_date', startDate.toISOString().split('T')[0])
-    .order('metric_date', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getAffiliateMetrics', (supabase) =>
+    supabase
+      .from('affiliate_metrics')
+      .select('*')
+      .eq('affiliate_id', affiliateId)
+      .gte('metric_date', startDate.toISOString().split('T')[0])
+      .order('metric_date', { ascending: false })
+  );
 }
 
 // Get tier rules
 export async function getTierRules(programId: string) {
-  const { data, error } = await getAdminClient()
-    .from('affiliate_tier_rules')
-    .select('*')
-    .eq('program_id', programId)
-    .eq('is_active', true)
-    .order('tier_level', { ascending: true });
-
-  if (error) throw error;
-  return data;
+  if (!programId) return [];
+  return readList('getTierRules', (supabase) =>
+    supabase
+      .from('affiliate_tier_rules')
+      .select('*')
+      .eq('program_id', programId)
+      .eq('is_active', true)
+      .order('tier_level', { ascending: true })
+  );
 }
 
 // Get affiliate programs

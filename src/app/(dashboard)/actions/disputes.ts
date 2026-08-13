@@ -1,6 +1,7 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Create dispute
@@ -43,19 +44,15 @@ export async function createDispute(disputeData: {
 
 // Get disputes for user
 export async function getUserDisputes(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('disputes')
-    .select(`
-      *,
-      collaboration:collaborations(id, agreed_amount),
-      raised_by_user:profiles(id, display_name),
-      raised_against_user:profiles(id, display_name)
-    `)
-    .or(`raised_by.eq.${userId},raised_against.eq.${userId}`)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getUserDisputes', (supabase) =>
+    supabase
+      .from('disputes')
+      .select(`
+        *,
+        collaboration:collaborations(id, agreed_amount, brand_id, influencer_id)
+      `)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Get dispute by ID

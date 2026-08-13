@@ -1,35 +1,37 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Get subscription plans
 export async function getSubscriptionPlans() {
-  const { data, error } = await getAdminClient()
-    .from('subscription_plans')
-    .select('*')
-    .eq('is_active', true)
-    .order('price_cents', { ascending: true });
-
-  if (error) throw error;
-  return data;
+  return readList('getSubscriptionPlans', (supabase) =>
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('price_monthly_cents', { ascending: true })
+  );
 }
 
 // Get user subscription
-export async function getUserSubscription(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('user_subscriptions')
-    .select(`
-      *,
-      plan:subscription_plans(*)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
+export async function getUserSubscription(userId: string): Promise<any | null> {
+  return readOne(
+    'getUserSubscription',
+    (supabase) =>
+      supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          plan:subscription_plans(*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single(),
+    { notFoundOk: true }
+  );
 }
 
 // Check if user has feature access
@@ -68,14 +70,13 @@ export async function recordUsage(userId: string, metricType: string, amount: nu
 
 // Get usage tracking for user
 export async function getUserUsage(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('usage_tracking')
-    .select('*')
-    .eq('user_id', userId)
-    .order('reset_date', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getUserUsage', (supabase) =>
+    supabase
+      .from('usage_tracking')
+      .select('*')
+      .eq('user_id', userId)
+      .order('reset_date', { ascending: false })
+  );
 }
 
 // Create subscription

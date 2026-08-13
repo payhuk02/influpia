@@ -1,19 +1,19 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Get report templates
 export async function getReportTemplates() {
-  const { data, error } = await getAdminClient()
-    .from('report_templates')
-    .select('*')
-    .eq('is_active', true)
-    .order('category', { ascending: true })
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getReportTemplates', (supabase) =>
+    supabase
+      .from('report_templates')
+      .select('*')
+      .eq('is_active', true)
+      .order('category', { ascending: true })
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Generate report
@@ -41,17 +41,16 @@ export async function createReport(reportData: {
 
 // Get generated reports for user
 export async function getGeneratedReports(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('generated_reports')
-    .select(`
-      *,
-      template:report_templates(name, display_name)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getGeneratedReports', (supabase) =>
+    supabase
+      .from('generated_reports')
+      .select(`
+        *,
+        template:report_templates(name, display_name)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Generate campaign performance report
@@ -119,14 +118,13 @@ export async function scheduleReport(scheduleData: {
 
 // Get scheduled reports for user
 export async function getScheduledReports(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('scheduled_reports')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getScheduledReports', (supabase) =>
+    supabase
+      .from('scheduled_reports')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Process scheduled reports
@@ -198,15 +196,14 @@ export async function removeReportFavorite(userId: string, reportId: string) {
 
 // Get favorite reports
 export async function getFavoriteReports(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('report_favorites')
-    .select(`
-      *,
-      report:generated_reports(*)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getFavoriteReports', (supabase) =>
+    supabase
+      .from('report_favorites')
+      .select(`
+        *,
+        report:generated_reports(*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }

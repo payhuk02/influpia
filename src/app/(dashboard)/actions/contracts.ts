@@ -1,19 +1,18 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Get contract templates
 export async function getContractTemplates() {
-  const { data, error } = await getAdminClient()
-    .from('contract_templates')
-    .select('*')
-    .eq('is_active', true)
-    .order('is_default', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getContractTemplates', (supabase) =>
+    supabase
+      .from('contract_templates')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Generate contract from template
@@ -29,21 +28,17 @@ export async function generateContractFromTemplate(templateId: string, variables
 }
 
 // Get contracts for a user
-export async function getUserContracts(userId: string, role: 'brand' | 'influencer') {
-  const column = role === 'brand' ? 'brand_id' : 'influencer_id';
-  
-  const { data, error } = await getAdminClient()
-    .from('contracts')
-    .select(`
-      *,
-      template:contract_templates(name, description),
-      collaboration:collaborations(id, agreed_amount, status)
-    `)
-    .eq(column, userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+export async function getUserContracts(_userId: string, _role: 'brand' | 'influencer') {
+  return readList('getUserContracts', (supabase) =>
+    supabase
+      .from('contracts')
+      .select(`
+        *,
+        template:contract_templates(name, description),
+        collaboration:collaborations(id, agreed_amount, status)
+      `)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Get contract by ID

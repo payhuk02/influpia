@@ -1,6 +1,7 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Generate API key
@@ -29,14 +30,13 @@ export async function generateAPIKey(userId: string, keyData: {
 
 // Get API keys for user
 export async function getAPIKeys(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('api_keys')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getAPIKeys', (supabase) =>
+    supabase
+      .from('api_keys')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Delete API key
@@ -106,15 +106,14 @@ export async function logAPIUsage(usageData: {
 
 // Get API usage logs
 export async function getAPIUsageLogs(userId: string, limit: number = 100) {
-  const { data, error } = await getAdminClient()
-    .from('api_usage_logs')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data;
+  return readList('getAPIUsageLogs', (supabase) =>
+    supabase
+      .from('api_usage_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+  );
 }
 
 // Get API usage stats
@@ -157,14 +156,13 @@ export async function createWebhook(userId: string, webhookData: {
 
 // Get webhooks for user
 export async function getWebhooks(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('api_webhooks')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getWebhooks', (supabase) =>
+    supabase
+      .from('api_webhooks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Delete webhook
@@ -204,12 +202,11 @@ export async function triggerAPIWebhook(webhookId: string, eventType: string, pa
 
 // Get API endpoints
 export async function getAPIEndpoints() {
-  const { data, error } = await getAdminClient()
-    .from('api_endpoints')
-    .select('*')
-    .eq('is_deprecated', false)
-    .order('endpoint_path', { ascending: true });
-
-  if (error) throw error;
-  return data;
+  return readList('getAPIEndpoints', (supabase) =>
+    supabase
+      .from('api_endpoints')
+      .select('*')
+      .eq('is_deprecated', false)
+      .order('endpoint_path', { ascending: true })
+  );
 }

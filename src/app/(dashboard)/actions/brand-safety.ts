@@ -1,18 +1,18 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Get brand safety categories
 export async function getBrandSafetyCategories() {
-  const { data, error } = await getAdminClient()
-    .from('brand_safety_categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('category_name', { ascending: true });
-
-  if (error) throw error;
-  return data;
+  return readList('getBrandSafetyCategories', (supabase) =>
+    supabase
+      .from('brand_safety_categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('category_name', { ascending: true })
+  );
 }
 
 // Get influencer vetting
@@ -163,15 +163,17 @@ export async function verifyDocument(documentId: string, verifiedBy: string, sta
 }
 
 // Get brand safety preferences
-export async function getBrandSafetyPreferences(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('brand_safety_preferences')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
+export async function getBrandSafetyPreferences(userId: string): Promise<any | null> {
+  return readOne(
+    'getBrandSafetyPreferences',
+    (supabase) =>
+      supabase
+        .from('brand_safety_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single(),
+    { notFoundOk: true }
+  );
 }
 
 // Update brand safety preferences

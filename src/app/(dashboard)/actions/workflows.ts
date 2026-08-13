@@ -1,18 +1,18 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Get workflow templates
 export async function getWorkflowTemplates() {
-  const { data, error } = await getAdminClient()
-    .from('workflow_templates')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getWorkflowTemplates', (supabase) =>
+    supabase
+      .from('workflow_templates')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Create workflow definition from template
@@ -30,14 +30,13 @@ export async function createWorkflowFromTemplate(templateId: string, userId: str
 
 // Get workflow definitions for user
 export async function getWorkflowDefinitions(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('workflow_definitions')
-    .select('*')
-    .eq('created_by', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getWorkflowDefinitions', (supabase) =>
+    supabase
+      .from('workflow_definitions')
+      .select('*')
+      .eq('created_by', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Get workflow by ID

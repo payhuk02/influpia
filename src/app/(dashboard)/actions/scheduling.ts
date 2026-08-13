@@ -1,6 +1,7 @@
 'use server';
 
 import { getAdminClient } from '@/utils/supabase/admin';
+import { readList, readOne } from '@/utils/supabase/safe-read';
 import { revalidatePath } from 'next/cache';
 
 // Create scheduled content
@@ -32,22 +33,17 @@ export async function createScheduledContent(contentData: {
 
 // Get scheduled content for user
 export async function getScheduledContent(userId: string, startDate?: string, endDate?: string) {
-  let query = getAdminClient()
-    .from('scheduled_content')
-    .select('*')
-    .eq('user_id', userId)
-    .order('scheduled_for', { ascending: true });
+  return readList('getScheduledContent', async (supabase) => {
+    let query = supabase
+      .from('scheduled_content')
+      .select('*')
+      .eq('influencer_id', userId)
+      .order('scheduled_for', { ascending: true });
 
-  if (startDate) {
-    query = query.gte('scheduled_for', startDate);
-  }
-  if (endDate) {
-    query = query.lte('scheduled_for', endDate);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
+    if (startDate) query = query.gte('scheduled_for', startDate);
+    if (endDate) query = query.lte('scheduled_for', endDate);
+    return query;
+  });
 }
 
 // Update scheduled content status
@@ -114,27 +110,24 @@ export async function createContentTemplate(templateData: {
 
 // Get content templates
 export async function getContentTemplates(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('content_templates')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  return readList('getContentTemplates', (supabase) =>
+    supabase
+      .from('content_templates')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  );
 }
 
 // Get scheduling rules
 export async function getSchedulingRules(userId: string) {
-  const { data, error } = await getAdminClient()
-    .from('scheduling_rules')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true);
-
-  if (error) throw error;
-  return data;
+  return readList('getSchedulingRules', (supabase) =>
+    supabase
+      .from('scheduling_rules')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+  );
 }
 
 // Create scheduling rule
